@@ -1,0 +1,74 @@
+PYTHON INSTALLATION COMMANDS
+PyTorch + TensorFlow (CPU ONLY - NO CUDA)
+
+Run all commands below in Windows CMD, PowerShell, Anaconda Prompt, or the VS Code terminal.
+Do NOT run pip install commands inside a Python interactive prompt (>>>).
+
+============================================================
+1. CHECK PYTHON AND PIP
+============================================================
+
+python --version
+pip --version
+
+If Python is not installed, download it from:
+https://www.python.org/downloads/
+
+============================================================
+2. UPGRADE PIP
+============================================================
+
+python -m pip install --upgrade pip
+
+============================================================
+3. INSTALL PYTORCH (CPU)
+============================================================
+
+pip install torch torchvision torchaudio
+
+============================================================
+4. INSTALL TENSORFLOW
+============================================================
+
+pip install tensorflow
+
+============================================================
+5. INSTALL COMMON DEEP LEARNING LIBRARIES
+============================================================
+
+pip install numpy pandas matplotlib scikit-learn tensorboard seaborn jupyter
+
+============================================================
+6. VERIFY PYTORCH INSTALLATION
+============================================================
+
+python -c "import torch; print('PyTorch Version:', torch.__version__); print('CUDA Available:', torch.cuda.is_available())"
+
+For CPU-only installation, CUDA Available should normally show False.
+
+============================================================
+7. VERIFY TENSORFLOW INSTALLATION
+============================================================
+
+python -c "import tensorflow as tf; print('TensorFlow Version:', tf.__version__); print('Available Devices:', tf.config.list_physical_devices())"
+
+============================================================
+8. VERIFY BOTH FRAMEWORKS TOGETHER
+============================================================
+
+python -c "import torch, tensorflow as tf; print('PyTorch:', torch.__version__); print('TensorFlow:', tf.__version__); print('PyTorch CUDA Available:', torch.cuda.is_available()); print('TensorFlow Devices:', tf.config.list_physical_devices())"
+
+============================================================
+IMPORTANT NOTES
+============================================================
+
+1. These commands install CPU-compatible packages. No CUDA or cuDNN installation is required.
+2. Run commands one at a time and wait for each installation to finish.
+3. If Windows says 'python is not recognized', install Python and enable 'Add Python to PATH' during setup.
+4. If using Jupyter Notebook, install packages in the same Python environment/kernel used by the notebook.
+5. Restart VS Code or Jupyter after installation if imports are not detected.
+6. TensorFlow and PyTorch may require a supported Python version. If installation reports that no compatible package is available, check the framework's current Python-version support and use a supported Python environment.
+
+Official documentation:
+PyTorch: https://pytorch.org/get-started/locally/
+TensorFlow: https://www.tensorflow.org/install/pip

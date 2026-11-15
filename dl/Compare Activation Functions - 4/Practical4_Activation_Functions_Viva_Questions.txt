@@ -1,0 +1,979 @@
+PRACTICAL 4: VISUALIZE AND COMPARE ACTIVATION FUNCTIONS VIVA QUESTION
+BANK WITH ANSWERS
+
+Problem statement: 1. Train the same MLP using Sigmoid, Tanh, and ReLU.
+2. Plot training speed, accuracy, and gradient flow. 3. Discuss
+vanishing and exploding gradient issues.
+
+Basis: Uploaded Pract4.ipynb and the simple additions discussed for
+measuring training time and layer-wise gradients.
+
+============================================================ SECTION 1:
+AIM AND BASIC CONCEPTS
+============================================================
+
+Q1. What is the aim of this practical? Answer: The aim is to train the
+same Multi-Layer Perceptron (MLP) using Sigmoid, Tanh, and ReLU
+activation functions, compare their learning behaviour, and study
+gradient flow and vanishing or exploding gradient problems.
+
+Q2. What is an activation function? Answer: An activation function is a
+mathematical function applied to a neuron’s output. It introduces
+non-linearity, allowing a neural network to learn complex patterns.
+
+Q3. Why do we need activation functions? Answer: Without activation
+functions, a network made only of linear layers behaves like one linear
+transformation, regardless of how many layers it contains. Activation
+functions allow the network to learn non-linear relationships.
+
+Q4. What happens if we do not use an activation function? Answer: The
+network becomes a composition of linear operations and cannot learn
+complex non-linear patterns effectively.
+
+Q5. Which activation functions are compared in this practical? Answer:
+Sigmoid, Tanh, and ReLU.
+
+Q6. What is an MLP? Answer: MLP stands for Multi-Layer Perceptron. It is
+a feed-forward neural network containing an input layer, one or more
+hidden layers, and an output layer.
+
+Q7. What is a feed-forward neural network? Answer: It is a neural
+network in which information moves from the input layer through hidden
+layers to the output layer, without feedback connections.
+
+Q8. What is the main purpose of comparing activation functions? Answer:
+To understand how different activation functions affect training loss,
+accuracy, training time, and gradient flow.
+
+Q9. What is non-linearity? Answer: Non-linearity means the relationship
+between input and output is not simply a straight-line relationship. It
+helps a network learn complex patterns.
+
+Q10. Are activation functions used only in hidden layers? Answer:
+No. They can also be used in output layers. The suitable output
+activation depends on the task. In this practical, the final layer
+returns logits and CrossEntropyLoss handles the classification
+objective.
+
+============================================================ SECTION 2:
+DATASET AND PREPROCESSING
+============================================================
+
+Q11. Which dataset is used in the uploaded notebook? Answer: The MNIST
+handwritten digit dataset.
+
+Q12. What is MNIST? Answer: MNIST is a dataset of handwritten digit
+images from 0 to 9. Each image is a 28 by 28 grayscale image.
+
+Q13. How many classes are there in MNIST? Answer: There are 10 classes,
+representing digits 0 through 9.
+
+Q14. What is the shape of one MNIST image? Answer: 28 by 28 pixels.
+
+Q15. How many input features does one flattened MNIST image have?
+Answer: 784 features, because 28 multiplied by 28 equals 784.
+
+Q16. What does transforms.ToTensor() do? Answer: It converts an image
+into a PyTorch tensor and scales standard 8-bit image pixel values to
+the range 0 to 1.
+
+Q17. Why are images converted into tensors? Answer: PyTorch models
+operate on tensors. Tensors store numerical data and support GPU
+computation and automatic differentiation.
+
+Q18. What does datasets.MNIST() do? Answer: It loads the MNIST dataset.
+The train argument selects the training or test portion, download=True
+downloads it if needed, and transform applies preprocessing.
+
+Q19. What does train=True mean? Answer: It selects the training portion
+of the MNIST dataset.
+
+Q20. What does train=False mean? Answer: It selects the test portion of
+the MNIST dataset.
+
+Q21. What does DataLoader do? Answer: DataLoader provides data in
+batches and can shuffle the data for training.
+
+Q22. What is batch_size=128? Answer: It means 128 images are processed
+in one batch before the optimizer updates the model parameters.
+
+Q23. Why is shuffle=True used for training? Answer: It changes the order
+of training examples between epochs, helping prevent the model from
+depending on a fixed data order.
+
+Q24. Why is shuffle=False used for validation or testing? Answer:
+Shuffling is not necessary for evaluation because the model is not
+learning from those batches. Keeping the order fixed can also make
+evaluation easier to reproduce.
+
+Q25. What is the difference between training and test data? Answer:
+Training data is used to update model weights. Test data is kept
+separate to estimate performance on unseen examples.
+
+Q26. Is the uploaded notebook using a separate validation split? Answer:
+No. It loads MNIST with train=True for training and train=False for the
+variable named val_dataset. That second set is the official MNIST test
+set, even though the notebook calls it validation data.
+
+Q27. What is the recommended practice? Answer: Use part of the training
+data as validation data for model selection, and keep the official test
+set untouched for final evaluation.
+
+============================================================ SECTION 3:
+PYTORCH AND MODEL ARCHITECTURE
+============================================================
+
+Q28. Which framework is used in this practical? Answer: PyTorch.
+
+Q29. What is PyTorch? Answer: PyTorch is an open-source deep-learning
+framework used to build, train, and evaluate neural networks.
+
+Q30. What is torch.nn? Answer: torch.nn is a PyTorch module that
+contains neural-network layers, activation functions, and loss
+functions.
+
+Q31. What is nn.Module? Answer: It is the base class for neural-network
+models in PyTorch. We create a model by defining a class that inherits
+from nn.Module.
+
+Q32. Why do we use super().__init__()? Answer: It initializes the parent
+nn.Module class so that PyTorch can register and manage the model’s
+layers and parameters.
+
+Q33. What is nn.Linear? Answer: It is a fully connected layer that
+performs a linear transformation using weights and biases.
+
+Q34. What is the architecture used in this practical? Answer: The MLP
+has 784 input features, a first hidden layer with 256 neurons, a second
+hidden layer with 128 neurons, and an output layer with 10 neurons.
+
+Q35. Why are there 784 input features? Answer: Each 28 by 28 image is
+flattened into a vector of 784 pixel values.
+
+Q36. Why does the first hidden layer contain 256 neurons? Answer: It is
+the chosen hidden-layer size for this experiment. It gives the model
+capacity to learn features from the input images.
+
+Q37. Why does the second hidden layer contain 128 neurons? Answer: It is
+the chosen size of the second hidden layer, allowing the model to
+process learned features before classification.
+
+Q38. Why does the output layer contain 10 neurons? Answer: MNIST has 10
+digit classes, so the output layer produces one score, or logit, for
+each class.
+
+Q39. What is Flatten? Answer: Flatten converts each 28 by 28 image into
+a one-dimensional vector of 784 values.
+
+Q40. What does forward() do? Answer: It defines how input data passes
+through the layers of the model to produce an output.
+
+Q41. What does self.activation mean in the model? Answer: It stores the
+activation function passed to the MLP constructor. The same model
+architecture can therefore use Sigmoid, Tanh, or ReLU.
+
+Q42. Why do we use the same MLP architecture for all three activations?
+Answer: To make the comparison fair. The main intended difference
+between the experiments is the activation function.
+
+Q43. What is a model parameter? Answer: A model parameter is a value
+learned during training, such as a weight or bias.
+
+Q44. What is the difference between a weight and a bias? Answer: A
+weight scales an input connection. A bias is an additional learnable
+value added to the weighted sum.
+
+============================================================ SECTION 4:
+SIGMOID ACTIVATION
+============================================================
+
+Q45. What is the Sigmoid activation function? Answer: Sigmoid is an
+S-shaped activation function that maps any real-valued input to a value
+between 0 and 1.
+
+Q46. What is the formula for Sigmoid? Answer: sigmoid(x) = 1 / (1 +
+e^(-x)).
+
+Q47. What is the output range of Sigmoid? Answer: It is between 0 and 1,
+excluding the exact endpoints for finite inputs.
+
+Q48. What is the derivative of Sigmoid? Answer: If y = sigmoid(x), then
+its derivative is y(1-y).
+
+Q49. What are the advantages of Sigmoid? Answer: Its output is bounded
+between 0 and 1, and it can be useful when a probability-like output is
+needed, especially in a binary classification output layer.
+
+Q50. What are the disadvantages of Sigmoid? Answer: It can saturate for
+very positive or very negative inputs. In those regions its derivative
+becomes very small, which can cause vanishing gradients. Its outputs are
+also not zero-centred.
+
+Q51. What does saturation mean in Sigmoid? Answer: Saturation occurs
+when the input is very large or very negative, causing the output to
+become close to 1 or 0. The derivative then becomes close to zero.
+
+Q52. Is Sigmoid zero-centred? Answer: No. Its outputs are between 0 and
+1, so they are not centred around zero.
+
+Q53. Where is Sigmoid commonly used? Answer: It is commonly used in the
+output layer of binary classification models to produce a value between
+0 and 1.
+
+============================================================ SECTION 5:
+TANH ACTIVATION
+============================================================
+
+Q54. What is Tanh? Answer: Tanh, or hyperbolic tangent, is an activation
+function that maps real-valued inputs to values between -1 and 1.
+
+Q55. What is the output range of Tanh? Answer: Between -1 and 1,
+excluding the exact endpoints for finite inputs.
+
+Q56. What is the formula for Tanh? Answer: tanh(x) = (e^x - e^(-x)) /
+(e^x + e^(-x)).
+
+Q57. What is the derivative of Tanh? Answer: If y = tanh(x), its
+derivative is 1 - y^2.
+
+Q58. Is Tanh zero-centred? Answer: Yes. Its output range is symmetric
+around zero.
+
+Q59. What are the advantages of Tanh? Answer: It is zero-centred and can
+represent both positive and negative activations.
+
+Q60. What are the disadvantages of Tanh? Answer: For large positive or
+negative inputs, it saturates near 1 or -1. Its derivative becomes very
+small, so it can suffer from vanishing gradients.
+
+Q61. How is Tanh different from Sigmoid? Answer: Sigmoid outputs values
+between 0 and 1, whereas Tanh outputs values between -1 and 1. Tanh is
+zero-centred, while Sigmoid is not.
+
+Q62. Why can Tanh sometimes train better than Sigmoid? Answer: Its
+zero-centred output can make optimization easier in some networks.
+However, Tanh can still suffer from vanishing gradients.
+
+============================================================ SECTION 6:
+RELU ACTIVATION
+============================================================
+
+Q63. What is ReLU? Answer: ReLU stands for Rectified Linear Unit. It
+outputs zero for negative inputs and returns the input itself for
+positive inputs.
+
+Q64. What is the formula for ReLU? Answer: ReLU(x) = max(0, x).
+
+Q65. What is the output range of ReLU? Answer: From 0 to positive
+infinity.
+
+Q66. What is the derivative of ReLU? Answer: It is 0 for negative inputs
+and 1 for positive inputs. At zero, the derivative is conventionally
+assigned a subgradient by the implementation.
+
+Q67. What are the advantages of ReLU? Answer: It is simple and
+computationally efficient. For positive inputs its derivative is 1,
+which helps reduce the vanishing-gradient problem in those active units.
+
+Q68. What is the dying ReLU problem? Answer: A ReLU neuron can become
+inactive if it receives negative inputs consistently. Its output and
+gradient remain zero, so it may stop learning.
+
+Q69. Does ReLU suffer from vanishing gradients? Answer: For positive
+inputs, its derivative is 1, so it avoids the saturation-related
+vanishing gradient seen in Sigmoid and Tanh. However, gradients are zero
+for negative inputs, and other network factors can still cause small
+gradients.
+
+Q70. What are the disadvantages of ReLU? Answer: It can produce inactive
+or dead neurons for negative inputs, and its output is not bounded
+above.
+
+Q71. Why is ReLU widely used in hidden layers? Answer: It is
+computationally simple and often allows deep networks to train
+effectively.
+
+Q72. What are alternatives to ReLU? Answer: Leaky ReLU, Parametric ReLU
+(PReLU), ELU, and GELU are examples.
+
+============================================================ SECTION 7:
+COMPARISON OF ACTIVATION FUNCTIONS
+============================================================
+
+Q73. Compare Sigmoid, Tanh, and ReLU. Answer: Sigmoid outputs values
+between 0 and 1 and can suffer from vanishing gradients. Tanh outputs
+values between -1 and 1 and is zero-centred, but can also suffer from
+vanishing gradients. ReLU outputs zero for negative inputs and the input
+itself for positive inputs; it is efficient but can have dead neurons.
+
+Q74. Which activation function is usually preferred in hidden layers?
+Answer: ReLU is a common default choice for hidden layers because it is
+simple and often trains efficiently. The best choice still depends on
+the task and architecture.
+
+Q75. Which activation function is zero-centred? Answer: Tanh.
+
+Q76. Which activation function has output between 0 and 1? Answer:
+Sigmoid.
+
+Q77. Which activation function has output between -1 and 1? Answer:
+Tanh.
+
+Q78. Which activation function can produce outputs greater than 1?
+Answer: ReLU.
+
+Q79. Which activation functions can suffer from saturation? Answer:
+Sigmoid and Tanh.
+
+Q80. Which activation function has a zero output for all negative
+inputs? Answer: ReLU.
+
+Q81. Is ReLU always the best activation function? Answer: No. It is
+often a strong default for hidden layers, but the best activation
+depends on the model, data, and task.
+
+============================================================ SECTION 8:
+MODEL TRAINING AND OPTIMIZATION
+============================================================
+
+Q82. What is model training? Answer: Model training is the process of
+adjusting model parameters to reduce prediction error on training data.
+
+Q83. What is an epoch? Answer: One epoch is one complete pass through
+the training dataset.
+
+Q84. How many epochs are used in the uploaded notebook? Answer: 10
+epochs for each activation function.
+
+Q85. What is an optimizer? Answer: An optimizer updates the model’s
+weights and biases using gradients calculated during backpropagation.
+
+Q86. Which optimizer is used? Answer: Adam.
+
+Q87. What is Adam? Answer: Adam stands for Adaptive Moment Estimation.
+It uses moving estimates of gradients and squared gradients to adapt
+parameter updates.
+
+Q88. What learning rate is used? Answer: 0.001.
+
+Q89. What is a learning rate? Answer: It controls the size of the
+parameter updates made by the optimizer.
+
+Q90. What can happen if the learning rate is too high? Answer: Training
+may become unstable, overshoot good solutions, or fail to converge.
+
+Q91. What can happen if the learning rate is too low? Answer: Training
+may be very slow and may need more epochs to reach a good solution.
+
+Q92. What is a loss function? Answer: A loss function measures how
+different the model’s predictions are from the correct labels.
+
+Q93. Which loss function is used? Answer: nn.CrossEntropyLoss().
+
+Q94. Why is CrossEntropyLoss used? Answer: It is suitable for
+multi-class classification tasks. It combines the log-softmax operation
+with negative log-likelihood loss.
+
+Q95. Should Softmax be added before CrossEntropyLoss in this notebook?
+Answer: No. PyTorch CrossEntropyLoss expects raw logits and internally
+applies the required log-softmax calculation.
+
+Q96. What is backpropagation? Answer: Backpropagation calculates
+gradients of the loss with respect to model parameters using the chain
+rule, moving backward from the output toward earlier layers.
+
+Q97. What is a gradient? Answer: A gradient indicates how much the loss
+changes with respect to a parameter. It helps the optimizer decide how
+to update that parameter.
+
+Q98. What does loss.backward() do? Answer: It calculates gradients of
+the loss with respect to the model’s trainable parameters and stores
+them in each parameter’s grad attribute.
+
+Q99. What does optimizer.zero_grad() do? Answer: It clears gradients
+from the previous training step so that gradients do not unintentionally
+accumulate across batches.
+
+Q100. What does optimizer.step() do? Answer: It updates the model
+parameters using the gradients calculated during backpropagation.
+
+Q101. What does model.train() do? Answer: It puts the model into
+training mode. This matters for layers such as Dropout and Batch
+Normalization. The current MLP does not contain those layers, but using
+it is standard practice.
+
+Q102. What does model.eval() do? Answer: It puts the model into
+evaluation mode, changing the behaviour of layers such as Dropout and
+Batch Normalization when present.
+
+Q103. What does torch.no_grad() do? Answer: It disables gradient
+tracking in the enclosed code, reducing memory usage and computation
+during evaluation.
+
+Q104. What does model.to(device) do? Answer: It moves the model’s
+parameters and buffers to the selected device, such as CPU or GPU.
+
+Q105. Why do images and labels also need to be moved to device? Answer:
+The model and input tensors must be on compatible devices for operations
+to run. If the model is on GPU, input images and labels used in loss
+calculation must also be moved to GPU.
+
+============================================================ SECTION 9:
+GRADIENT FLOW
+============================================================
+
+Q106. What is gradient flow? Answer: Gradient flow describes how
+gradients pass backward through the layers of a neural network during
+backpropagation.
+
+Q107. Why do we visualize gradient flow? Answer: It helps us understand
+whether gradients are becoming very small or very large and whether
+different activation functions affect learning.
+
+Q108. What is gradient norm? Answer: Gradient norm is a measure of the
+magnitude of a gradient tensor. It gives an indication of how large the
+gradient values are.
+
+Q109. What does param.grad contain? Answer: It contains the gradient of
+the loss with respect to that parameter, after backward() has been
+called.
+
+Q110. What does param.grad.norm(2) calculate? Answer: It calculates the
+L2 norm, or Euclidean magnitude, of the parameter’s gradient tensor.
+
+Q111. What does a very small gradient norm indicate? Answer: It may
+indicate weak gradient updates. If gradients become very small in
+earlier layers, this can be a sign of vanishing gradients.
+
+Q112. What does a very large gradient norm indicate? Answer: It may
+indicate large parameter updates and possible exploding-gradient
+behaviour. It should be interpreted in context and across layers and
+batches.
+
+Q113. Does a single average gradient norm prove vanishing gradients?
+Answer: No. It is only a summary measure. Layer-wise gradients and their
+changes across training provide more useful evidence.
+
+Q114. What gradient measure is calculated in the original uploaded
+notebook? Answer: For each batch, it calculates the L2 norm of each
+parameter’s gradient, adds those norms, and divides by the number of
+parameters with gradients. It then averages that batch value across the
+epoch.
+
+Q115. What is layer-wise gradient measurement? Answer: It measures
+gradient magnitudes separately for each layer, such as fc1, fc2, and
+fc3, instead of combining all parameter gradients into one average.
+
+Q116. Why is layer-wise gradient measurement useful? Answer: It helps
+compare gradient magnitudes at different depths of the network and can
+make vanishing or unusually large gradients easier to notice.
+
+Q117. Does the original uploaded notebook calculate layer-wise
+gradients? Answer: No. It calculates one average gradient norm across
+model parameters per epoch. The layer-wise measurement was an additional
+improvement discussed later.
+
+Q118. What does fc1 represent? Answer: It is the first fully connected
+layer, with 784 input features and 256 output neurons.
+
+Q119. What does fc2 represent? Answer: It is the second fully connected
+layer, with 256 input features and 128 output neurons.
+
+Q120. What does fc3 represent? Answer: It is the output layer, with 128
+input features and 10 output scores.
+
+============================================================ SECTION 10:
+VANISHING AND EXPLODING GRADIENTS
+============================================================
+
+Q121. What is the vanishing gradient problem? Answer: It occurs when
+gradients become extremely small as they are propagated backward through
+a network. Earlier layers then receive very small updates and learn
+slowly.
+
+Q122. Why do vanishing gradients occur? Answer: During backpropagation,
+gradients are multiplied by derivatives from multiple layers. If many of
+these derivatives are small, the resulting gradient can shrink rapidly.
+
+Q123. Which activations are commonly associated with vanishing
+gradients? Answer: Sigmoid and Tanh can cause vanishing gradients when
+their inputs are in saturated regions, where their derivatives are close
+to zero.
+
+Q124. Why does Sigmoid cause vanishing gradients? Answer: Its derivative
+becomes close to zero when its output is near 0 or 1. Multiplying many
+small derivatives during backpropagation can make gradients very small.
+
+Q125. Why can Tanh cause vanishing gradients? Answer: Its derivative
+becomes close to zero when its output is near -1 or 1. This can shrink
+gradients through multiple layers.
+
+Q126. What is the exploding gradient problem? Answer: It occurs when
+gradients become excessively large during backpropagation, causing very
+large and unstable parameter updates.
+
+Q127. What causes exploding gradients? Answer: Repeated multiplication
+by large derivatives or large weights across layers can cause gradient
+magnitudes to grow rapidly.
+
+Q128. What are the effects of exploding gradients? Answer: Training can
+become unstable, loss may become extremely large or turn into NaN, and
+model parameters may change drastically.
+
+Q129. How can vanishing gradients be reduced? Answer: ReLU-like
+activations, suitable initialization, normalization methods, residual
+connections, and architectures designed for stable gradient flow can
+help.
+
+Q130. How can exploding gradients be controlled? Answer: Gradient
+clipping, careful weight initialization, suitable learning rates, and
+normalization techniques can help control exploding gradients.
+
+Q131. What is gradient clipping? Answer: Gradient clipping limits
+gradient magnitude to a chosen threshold before the optimizer updates
+the parameters.
+
+Q132. Does ReLU completely solve vanishing gradients? Answer: No. ReLU
+has derivative 1 for positive inputs, which helps, but gradients can
+still vanish due to inactive units or other network and optimization
+factors.
+
+Q133. What is the difference between vanishing and exploding gradients?
+Answer: Vanishing gradients become extremely small and cause slow
+learning in earlier layers. Exploding gradients become extremely large
+and cause unstable updates.
+
+Q134. Are vanishing and exploding gradients the same as overfitting?
+Answer: No. They are different problems. Vanishing and exploding
+gradients concern gradient magnitudes during training, while overfitting
+occurs when a model learns training data too closely and generalizes
+poorly.
+
+============================================================ SECTION 11:
+VISUALIZATION AND MATPLOTLIB
+============================================================
+
+Q135. Which library is used for plotting? Answer: Matplotlib, imported
+as plt.
+
+Q136. What does plt.subplots(1, 3, figsize=(20, 5)) do? Answer: It
+creates a figure with one row and three plotting areas. The figure size
+is 20 inches wide and 5 inches high.
+
+Q137. What does axes[0] represent? Answer: It refers to the first
+subplot, which displays training loss in the notebook.
+
+Q138. What does axes[1] represent? Answer: It refers to the second
+subplot, which displays validation accuracy.
+
+Q139. What does axes[2] represent? Answer: It refers to the third
+subplot, which displays gradient flow.
+
+Q140. What does plt.plot() do? Answer: It draws a line graph using the
+supplied x and y values.
+
+Q141. What does marker=‘o’ do? Answer: It displays a circular marker at
+each plotted data point.
+
+Q142. What does label=name do? Answer: It assigns a label to a plotted
+line so that it can be identified in the legend.
+
+Q143. What does axes[].legend() do? Answer: It displays the labels of
+the plotted lines.
+
+Q144. What does axes[].grid(True) do? Answer: It displays grid lines,
+making the graph easier to read.
+
+Q145. What does set_xlabel() do? Answer: It sets the horizontal-axis
+label.
+
+Q146. What does set_ylabel() do? Answer: It sets the vertical-axis
+label.
+
+Q147. What does set_title() do? Answer: It sets the title of a subplot.
+
+Q148. What does plt.tight_layout() do? Answer: It adjusts spacing
+between plot elements to reduce overlapping labels and titles.
+
+Q149. What does plt.show() do? Answer: It displays the completed figure.
+
+Q150. What does the training loss graph show? Answer: It shows how the
+training loss changes over epochs for Sigmoid, Tanh, and ReLU.
+
+Q151. What does the validation accuracy graph show? Answer: It shows the
+percentage of correctly classified validation or evaluation images for
+each activation function over epochs.
+
+Q152. What does the gradient flow graph show? Answer: In the original
+notebook, it shows the average gradient norm recorded for each
+activation function over epochs.
+
+Q153. What does a decreasing training loss usually indicate? Answer: It
+usually indicates that the model is fitting the training data better.
+
+Q154. What does increasing validation accuracy usually indicate? Answer:
+It usually indicates that the model is improving its classification
+performance on the evaluation data.
+
+============================================================ SECTION 12:
+TRAINING SPEED AND TIMING
+============================================================
+
+Q155. What is training speed? Answer: Training speed describes how
+quickly a model completes training or processes training data. It can be
+measured using elapsed time, time per epoch, or samples processed per
+second.
+
+Q156. Does the original uploaded notebook measure actual training time?
+Answer: No. The original notebook records loss, validation accuracy, and
+gradient norm, but it does not measure elapsed training time.
+
+Q157. What addition was suggested to measure training time? Answer:
+Import Python’s time module, record time.time() before the training
+batches, and calculate the elapsed time after the training batches
+finish.
+
+Q158. Why should validation time be excluded if we want training time?
+Answer: Because validation does not update model weights. Measuring only
+the training section gives a clearer measure of training duration.
+
+Q159. Why is torch.cuda.synchronize() used before timing GPU work?
+Answer: GPU operations are often asynchronous. Synchronizing waits for
+queued GPU operations to finish so that the measured elapsed time is
+more accurate.
+
+Q160. What is epoch time? Answer: It is the time taken to complete one
+epoch of training.
+
+Q161. What is total training time? Answer: It is the sum of the training
+times for all epochs.
+
+Q162. Can we say ReLU is always the fastest? Answer: No. ReLU is
+computationally simple, but actual measured time depends on hardware,
+software, implementation, and training behaviour. We should report the
+measured results.
+
+Q163. How can training speed be compared fairly? Answer: Use the same
+architecture, dataset, batch size, number of epochs, optimizer, learning
+rate, hardware, and timing method for all activation functions.
+
+============================================================ SECTION 13:
+PYTHON CODE QUESTIONS
+============================================================
+
+Q164. What does import torch do? Answer: It imports the PyTorch library.
+
+Q165. What does import torch.nn as nn do? Answer: It imports PyTorch’s
+neural-network module under the alias nn.
+
+Q166. What does import torch.optim as optim do? Answer: It imports
+PyTorch’s optimization module under the alias optim.
+
+Q167. What does torch.manual_seed(42) do? Answer: It sets the random
+seed for PyTorch operations to help make results more reproducible.
+
+Q168. Does setting torch.manual_seed(42) guarantee identical results in
+every environment? Answer: No. Other libraries, GPU operations,
+data-loader randomness, and hardware-specific nondeterminism may still
+affect results.
+
+Q169. What does torch.cuda.is_available() check? Answer: It checks
+whether CUDA GPU computation is available to PyTorch.
+
+Q170. What does torch.device() do? Answer: It represents the device on
+which tensors and models should run, such as CPU or CUDA GPU.
+
+Q171. What does nn.Sigmoid() create? Answer: It creates a Sigmoid
+activation module.
+
+Q172. What does nn.Tanh() create? Answer: It creates a Tanh activation
+module.
+
+Q173. What does nn.ReLU() create? Answer: It creates a ReLU activation
+module.
+
+Q174. What does results = {} mean? Answer: It creates an empty Python
+dictionary to store the results for each activation function.
+
+Q175. What does activations.items() return? Answer: It provides the
+key-value pairs in the dictionary, such as the activation name and its
+activation module.
+
+Q176. Why are results stored in a dictionary? Answer: It keeps each
+activation function’s loss, accuracy, and gradient history together,
+making comparison and plotting easier.
+
+Q177. What does torch.max(outputs, 1) do? Answer: It finds the maximum
+output score along dimension 1, which represents the class dimension. It
+returns the maximum scores and their class indices.
+
+Q178. What does predicted == labels do? Answer: It compares predicted
+class indices with the correct labels and produces Boolean values
+indicating which predictions are correct.
+
+Q179. What does .sum().item() do in the accuracy calculation? Answer: It
+counts the correct predictions and converts the resulting single-value
+tensor into a regular Python number.
+
+Q180. Why is accuracy multiplied by 100? Answer: To express the fraction
+of correct predictions as a percentage.
+
+============================================================ SECTION 14:
+IMPORTANT QUESTIONS ABOUT THE ACTUAL NOTEBOOK
+============================================================
+
+Q181. How many models are trained in the uploaded notebook? Answer:
+Three separate MLP models are trained, one using Sigmoid, one using
+Tanh, and one using ReLU.
+
+Q182. How many epochs are used for each model? Answer: 10 epochs.
+
+Q183. What is the batch size? Answer: 128.
+
+Q184. Which optimizer is used? Answer: Adam.
+
+Q185. What is the learning rate? Answer: 0.001.
+
+Q186. Which loss function is used? Answer: CrossEntropyLoss.
+
+Q187. Does the final layer use Softmax? Answer: No. The final layer
+returns raw logits. CrossEntropyLoss handles the required log-softmax
+operation internally.
+
+Q188. Does the original notebook measure training time? Answer:
+No. Training-time measurement was an additional feature suggested after
+reviewing the original notebook.
+
+Q189. Does the original notebook calculate gradient norms separately for
+fc1, fc2, and fc3? Answer: No. It calculates one average gradient norm
+across model parameters for each epoch. Layer-wise gradient tracking was
+an optional improvement discussed later.
+
+Q190. What are the three original graphs? Answer: Training Loss,
+Validation Accuracy, and Gradient Flow.
+
+Q191. What additional graph was suggested? Answer: Training Time
+Comparison, showing the time taken per epoch by each activation
+function.
+
+Q192. What additional gradient measurement was suggested? Answer:
+Layer-wise gradient norms for fc1, fc2, and fc3.
+
+Q193. Why should we not claim that a particular activation function won
+without running the notebook? Answer: The actual accuracy, loss, and
+timing values depend on execution. The conclusion should be based on the
+measured results rather than assumed values.
+
+Q194. What is one limitation of the original experiment? Answer: The
+notebook calls the official MNIST test set val_dataset and evaluates on
+it after every epoch. A separate validation split would be better,
+leaving the test set for final evaluation.
+
+Q195. What is another limitation of the experiment? Answer: Only one run
+is used for each activation function. Repeating experiments with
+controlled seeds can provide a more reliable comparison.
+
+============================================================ SECTION 15:
+POSSIBLE MODIFICATION QUESTIONS
+============================================================
+
+Q196. How do you change the number of epochs? Answer: Change epochs=10
+in the train_model() call to the required number.
+
+Q197. How do you change the batch size? Answer: Change batch_size=128 in
+the DataLoader definitions.
+
+Q198. How do you change the learning rate? Answer: Change lr=0.001 in
+optim.Adam().
+
+Q199. How do you add another activation function? Answer: Add another
+entry to the activations dictionary, such as “LeakyReLU”:
+nn.LeakyReLU().
+
+Q200. How do you use a CSV dataset supplied by a teacher? Answer: Load
+it with pandas.read_csv(), separate input features and target labels,
+preprocess and convert them to PyTorch tensors, create a TensorDataset,
+and then create DataLoaders. The exact preprocessing depends on the
+dataset’s columns and format.
+
+Q201. If the CSV contains 784 pixel columns and a label column, what is
+the input size? Answer: The input size is 784. The label column is the
+target and should not be included among the input features.
+
+Q202. Why must the output layer be changed for a different dataset?
+Answer: The number of output neurons must match the number of classes in
+the new classification dataset.
+
+Q203. What if the dataset is not made of 28 by 28 images? Answer: The
+input preprocessing and first layer’s input size must be changed to
+match the new data. The current Flatten and 784-input configuration is
+specific to 28 by 28 images.
+
+Q204. What if the labels are one-hot encoded? Answer: CrossEntropyLoss
+normally expects integer class indices. Convert one-hot labels to class
+indices, or use a loss function and target format that match the chosen
+setup.
+
+Q205. What if the dataset is a binary classification dataset? Answer:
+The model and loss should be selected for binary classification. For
+example, one output logit can be used with BCEWithLogitsLoss, with
+labels in the expected format.
+
+============================================================ SECTION 16:
+QUICK REVISION
+============================================================
+
+Q206. Full form of MLP? Answer: Multi-Layer Perceptron.
+
+Q207. Full form of ReLU? Answer: Rectified Linear Unit.
+
+Q208. Full form of MNIST? Answer: Modified National Institute of
+Standards and Technology.
+
+Q209. Input image size? Answer: 28 by 28 pixels.
+
+Q210. Flattened input size? Answer: 784.
+
+Q211. Hidden layer sizes? Answer: 256 and 128 neurons.
+
+Q212. Number of output neurons? Answer: 10.
+
+Q213. Number of activation functions compared? Answer: Three.
+
+Q214. Name the activation functions. Answer: Sigmoid, Tanh, and ReLU.
+
+Q215. Sigmoid output range? Answer: 0 to 1.
+
+Q216. Tanh output range? Answer: -1 to 1.
+
+Q217. ReLU formula? Answer: max(0, x).
+
+Q218. Optimizer? Answer: Adam.
+
+Q219. Learning rate? Answer: 0.001.
+
+Q220. Loss function? Answer: CrossEntropyLoss.
+
+Q221. Epochs? Answer: 10.
+
+Q222. Batch size? Answer: 128.
+
+Q223. What causes vanishing gradients in Sigmoid and Tanh? Answer: Their
+derivatives become very small in saturated regions.
+
+Q224. What is the main ReLU problem? Answer: Dead or inactive neurons.
+
+Q225. What is gradient clipping used for? Answer: To limit excessively
+large gradients.
+
+Q226. What does loss.backward() do? Answer: It calculates gradients.
+
+Q227. What does optimizer.step() do? Answer: It updates model
+parameters.
+
+Q228. What does optimizer.zero_grad() do? Answer: It clears old
+gradients.
+
+Q229. What does model.eval() do? Answer: It switches the model to
+evaluation mode.
+
+Q230. What does torch.no_grad() do? Answer: It disables gradient
+tracking.
+
+Q231. What does CrossEntropyLoss expect? Answer: Raw class logits and
+integer class labels in the usual classification setup.
+
+Q232. Which activation is zero-centred? Answer: Tanh.
+
+Q233. Which activation is commonly used in hidden layers? Answer: ReLU.
+
+Q234. What is the purpose of the gradient-flow graph? Answer: To compare
+gradient magnitudes during training.
+
+Q235. What is the purpose of the training-loss graph? Answer: To compare
+how training loss changes over epochs.
+
+============================================================ SECTION 17:
+COMPLETE PRACTICAL EXPLANATION
+============================================================
+
+Q236. Explain the complete practical in your own words. Answer: In this
+practical, I compared three activation functions: Sigmoid, Tanh, and
+ReLU. I used the MNIST handwritten digit dataset, which contains
+grayscale images of digits from 0 to 9. Each image is 28 by 28 pixels.
+
+First, I loaded the dataset using torchvision and converted the images
+into tensors using transforms.ToTensor(). I created DataLoaders with a
+batch size of 128.
+
+Next, I built an MLP using PyTorch. The input image is flattened into
+784 features. The network has two hidden layers with 256 and 128
+neurons, followed by an output layer with 10 neurons.
+
+I trained the same architecture three times, changing only the
+activation function. I used Adam as the optimizer with a learning rate
+of 0.001 and CrossEntropyLoss as the loss function. Each model was
+trained for 10 epochs.
+
+During training, I recorded the training loss, validation accuracy, and
+average gradient norm. I then plotted these values to compare the three
+activation functions. In the improved version, I also measured epoch
+training time and could track gradients separately for each layer.
+
+Finally, I discussed vanishing gradients, which occur when gradients
+become very small, and exploding gradients, which occur when gradients
+become excessively large.
+
+Q237. What conclusion can you give for this practical? Answer:
+Activation functions have an important effect on neural-network
+training. Sigmoid and Tanh can suffer from vanishing gradients in
+saturated regions. ReLU often trains efficiently because its derivative
+is 1 for positive inputs, although it can suffer from dead neurons. The
+most suitable activation function should be selected by comparing actual
+loss, accuracy, gradient behaviour, and training time.
+
+Q238. Which activation function performed best in your experiment?
+Answer: The answer should be based on the actual results printed and
+plotted by the notebook. Do not claim a winner before running all three
+models and checking their results.
+
+Q239. Why did you keep the same architecture for all three models?
+Answer: To make the comparison fair. If the architecture and training
+settings remain the same, differences in results are more directly
+related to the activation function.
+
+Q240. What did you learn from this practical? Answer: I learned how
+activation functions introduce non-linearity, how Sigmoid, Tanh, and
+ReLU behave differently, how to train an MLP in PyTorch, and how
+gradient flow can affect neural-network learning.
+
+============================================================ STUDY
+PRIORITY ============================================================
+
+Prepare these topics first: 1. Aim of the practical and MLP
+architecture. 2. Sigmoid, Tanh, and ReLU definitions, formulas, and
+output ranges. 3. Difference between the three activation functions. 4.
+Vanishing and exploding gradients. 5. Backpropagation, gradients, and
+gradient norm. 6. PyTorch functions: forward(), loss.backward(),
+optimizer.step(), zero_grad(), model.train(), model.eval(), and
+torch.no_grad(). 7. Adam, CrossEntropyLoss, epochs, batch size, and
+learning rate. 8. How to explain the three graphs. 9. Actual notebook
+limitations: test set used as validation, no training-time measurement
+in the original notebook, and one combined gradient measure. 10.
+Complete practical explanation and conclusion.
+
+IMPORTANT NOTES: - The original uploaded notebook contains 3 plots:
+training loss, validation accuracy, and average gradient norm. - The
+original uploaded notebook does not measure actual training time. - The
+original uploaded notebook does not calculate separate gradient norms
+for fc1, fc2, and fc3. - Training-time and layer-wise gradient
+measurement are additional improvements discussed in the conversation. -
+The variable val_dataset in the original notebook is loaded with
+train=False, so it is the official MNIST test split, not a separate
+validation split. - No actual performance winner is assumed. Use the
+results from your own execution when answering that question. - No
+finite question bank can include every possible question an examiner may
+ask. This file covers the core practical, code, concepts, comparisons,
+and likely follow-up questions.
+
+END OF PRACTICAL 4 VIVA QUESTION BANK

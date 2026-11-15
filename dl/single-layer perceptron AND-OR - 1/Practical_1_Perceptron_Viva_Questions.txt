@@ -1,0 +1,176 @@
+PRACTICAL 1: IMPLEMENT A PERCEPTRON FROM SCRATCH
+VIVA QUESTIONS AND ANSWERS
+
+1. What is a perceptron?
+A perceptron is the simplest type of artificial neural network used for binary classification. It takes inputs, applies weights and bias, and produces an output using an activation function.
+
+2. Who introduced the perceptron?
+Frank Rosenblatt introduced the perceptron in 1958.
+
+3. What are the main components of a perceptron?
+Input values, weights, bias, summation function, activation function, and output.
+
+4. What is the purpose of weights?
+Weights determine the importance of each input in producing the final output.
+
+5. What is bias?
+Bias is an additional parameter that shifts the decision boundary and helps the model make predictions.
+
+6. What is an activation function?
+An activation function converts the weighted sum into the final output.
+
+7. Which activation function is used in this practical?
+A step activation function.
+
+8. Why do we use a step function?
+It converts the weighted sum into a binary output, either 0 or 1.
+
+9. What is the output of the step function in this code?
+If the input is greater than or equal to 0, the output is 1. If it is less than 0, the output is 0.
+
+10. What is the difference between a single-layer and multilayer perceptron?
+A single-layer perceptron has one trainable layer and solves linearly separable problems. A multilayer perceptron has multiple trainable layers and can learn nonlinear relationships.
+
+11. Why do you import NumPy?
+NumPy is used for numerical calculations, array operations, and matrix multiplication.
+
+12. Why do you import Matplotlib?
+Matplotlib is used to visualize the decision boundary and data points.
+
+13. Explain: self.weights = np.zeros(input_size + 1)
+It initializes all weights and the bias weight to zero. We add 1 because one additional weight is required for bias.
+
+14. Why do you use np.insert(x, 0, 1)?
+It inserts 1 at the beginning of the input array to represent the bias input.
+
+15. What is the purpose of np.dot()?
+It calculates the dot product of weights and input values to obtain the weighted sum.
+
+16. Explain: error = target - output
+It calculates the difference between the actual target value and the predicted output.
+
+17. Explain the weight update statement.
+self.weights += self.lr * error * xi_bias
+It updates the weights using the perceptron learning rule.
+
+18. What is learning rate?
+Learning rate controls how much the weights are adjusted during each update.
+
+19. What is the default learning rate in this code?
+0.1.
+
+20. What is an epoch?
+One epoch means one complete pass through the entire training dataset.
+
+21. Why do you use zip(X, y)?
+It pairs each input sample with its corresponding target output.
+
+22. What is the purpose of total_error?
+It calculates the total absolute classification error during one epoch.
+
+23. What happens if the learning rate is too high?
+Weights may change too drastically, potentially causing unstable learning.
+
+24. Why do you initialize weights with zeros?
+Zero initialization provides a simple starting point for the perceptron learning algorithm.
+
+25. Why did you use AND and OR gates?
+Both AND and OR datasets are linearly separable and are suitable for testing a single-layer perceptron.
+
+26. What is the output of an AND gate?
+Inputs and output:
+0 0 -> 0
+0 1 -> 0
+1 0 -> 0
+1 1 -> 1
+
+27. What is the output of an OR gate?
+Inputs and output:
+0 0 -> 0
+0 1 -> 1
+1 0 -> 1
+1 1 -> 1
+
+28. Can a single-layer perceptron solve XOR?
+No. XOR is not linearly separable, so a single-layer perceptron cannot classify it correctly.
+
+29. What is linear separability?
+A dataset is linearly separable if a straight line in 2D, or a hyperplane in higher dimensions, can separate its classes.
+
+30. Which logic gates are linearly separable?
+AND, OR, and NOT are linearly separable. XOR and XNOR are not.
+
+31. What is a decision boundary?
+A decision boundary is a line or hyperplane that separates different classes predicted by a classification model.
+
+32. Why do you use meshgrid()?
+It creates a grid of coordinate points for evaluating the model across the plotting region.
+
+33. What is the purpose of contourf()?
+It displays filled regions representing different predicted classes.
+
+34. What is the purpose of scatter()?
+It plots the original training data points on the graph.
+
+35. Why do you use plt.show()?
+It displays the generated graph.
+
+36. What does alpha=0.3 mean?
+It controls the transparency of the filled decision-boundary regions.
+
+37. What is the perceptron learning rule?
+It updates weights based on the difference between actual and predicted outputs:
+New weight = Old weight + Learning rate * Error * Input.
+
+38. What is the equation of a perceptron?
+Output = f(w1*x1 + w2*x2 + bias), where f is the activation function.
+
+39. What is binary classification?
+It is a machine learning task where data is classified into two categories, generally represented as 0 and 1.
+
+40. Is this practical supervised or unsupervised learning?
+Supervised learning, because we provide input data along with their expected target outputs.
+
+41. When does perceptron training stop?
+It stops when all training samples are correctly classified or when the maximum number of epochs is reached.
+
+42. What is the role of error during training?
+It measures the difference between predicted and actual outputs and guides weight updates.
+
+43. Does a perceptron guarantee convergence?
+It converges in a finite number of updates if the training data is linearly separable and the learning rate is positive.
+
+44. What is the difference between supervised and unsupervised learning?
+Supervised learning uses labelled data, while unsupervised learning uses unlabelled data.
+
+45. What is the limitation of a single-layer perceptron?
+It cannot solve non-linearly separable problems such as XOR.
+
+MOST IMPORTANT QUESTIONS TO PREPARE FIRST
+
+1. What is a perceptron?
+2. Explain the architecture of a perceptron.
+3. What is the role of weights and bias?
+4. Which activation function is used?
+5. Explain the perceptron learning rule.
+6. What is an epoch?
+7. What is learning rate?
+8. Why do we use NumPy?
+9. Why do we use np.dot()?
+10. Why do we use np.insert()?
+11. What is linear separability?
+12. Why can a perceptron not solve XOR?
+13. What is a decision boundary?
+14. Explain meshgrid(), contourf(), and scatter().
+15. What is the difference between AND and OR gates?
+
+CODE LINES TO UNDERSTAND FOR VIVA
+
+output = step_function(np.dot(self.weights, xi_bias))
+This calculates the weighted sum and applies the step activation function.
+
+error = target - output
+This calculates the difference between the actual target and predicted output.
+
+self.weights += self.lr * error * xi_bias
+This updates the weights using the perceptron learning rule.

@@ -1,0 +1,464 @@
+PRACTICAL 2: BUILD AND TRAIN A FEEDFORWARD NEURAL NETWORK (MLP)
+VIVA QUESTIONS AND ANSWERS
+
+BASIS: Uploaded Practical2.ipynb notebook
+Framework: PyTorch
+Dataset: MNIST
+Model: Multilayer Perceptron (MLP)
+Important note: The uploaded notebook uses ReLU activation and compares hidden-layer configurations [128], [256], and [256, 128]. It does not currently compare different activation functions. If asked, answer honestly and mention that activation-function tuning would require adding another configuration, such as Tanh.
+
+SECTION A: BASIC NEURAL NETWORK CONCEPTS
+
+1. What is a Feedforward Neural Network?
+A feedforward neural network is an artificial neural network in which information moves from the input layer through hidden layers to the output layer without forming cycles or feedback connections.
+
+2. What is an Artificial Neural Network (ANN)?
+An ANN is a computing model inspired by the human brain. It consists of interconnected artificial neurons that learn patterns from data.
+
+3. What is an MLP?
+MLP stands for Multilayer Perceptron. It is a feedforward neural network containing an input layer, one or more hidden layers, and an output layer.
+
+4. What are the main layers in an MLP?
+Input layer, hidden layer or layers, and output layer.
+
+5. What is a neuron?
+A neuron is a basic processing unit that takes inputs, multiplies them by weights, adds a bias, and applies an activation function.
+
+6. What are weights?
+Weights determine the importance of input values and are adjusted during training.
+
+7. What is bias?
+Bias is an additional learnable parameter that shifts the output of a neuron and helps the model fit data.
+
+8. What is the difference between a feedforward network and a recurrent neural network?
+A feedforward network passes information only forward and has no cycles. An RNN has recurrent connections and can retain information from previous sequence steps.
+
+9. What is deep learning?
+Deep learning is a branch of machine learning that uses neural networks with multiple layers to learn patterns from data.
+
+10. What is the difference between ANN and MLP?
+ANN is the general term for artificial neural networks. MLP is a specific type of feedforward ANN with one or more hidden layers.
+
+SECTION B: DATASET AND PREPROCESSING
+
+11. What is MNIST?
+MNIST is a dataset of handwritten digit images from 0 to 9. It contains 60,000 training images and 10,000 testing images.
+
+12. What is the size of each MNIST image?
+Each image is 28 pixels by 28 pixels.
+
+13. How many classes are present in MNIST?
+There are 10 classes, representing digits 0 through 9.
+
+14. Why do we use MNIST?
+MNIST is a standard beginner-friendly dataset used to train and evaluate image classification models.
+
+15. What is torchvision?
+Torchvision is a PyTorch library that provides popular datasets, image transformations, and model-related utilities.
+
+16. What is transforms.ToTensor()?
+It converts an image into a PyTorch tensor and scales image pixel values to the range 0 to 1.
+
+17. Why do we divide the dataset into training and testing sets?
+The training set is used to learn model parameters, while the testing set evaluates how well the trained model performs on unseen data.
+
+18. What is a DataLoader?
+DataLoader loads the dataset in batches and can shuffle the data during training.
+
+19. What is batch size in this practical?
+The batch size is 64, meaning the model processes 64 images in one batch.
+
+20. Why is shuffle=True used for the training DataLoader?
+It randomly changes the order of training samples in each epoch to reduce dependence on a fixed data order.
+
+21. Why is shuffle=False used for the testing DataLoader?
+Testing does not require random ordering. Keeping the order fixed also makes evaluation and result handling consistent.
+
+22. How many training and testing images are used?
+60,000 training images and 10,000 testing images.
+
+SECTION C: MODEL ARCHITECTURE AND CODE
+
+23. Which framework is used in this practical?
+PyTorch.
+
+24. Why do we import torch?
+It provides tensor operations and core functionality for building and training neural networks.
+
+25. What is torch.nn?
+It is the PyTorch module that provides layers, loss functions, and other neural-network building blocks.
+
+26. What is nn.Module?
+It is the base class for building custom neural network models in PyTorch.
+
+27. Why do we use super().__init__()?
+It initializes the parent nn.Module class so that PyTorch can properly manage the model's layers and parameters.
+
+28. What is nn.Sequential()?
+It creates a sequential container in which layers are executed in the order in which they are added.
+
+29. What is nn.Flatten()?
+It converts each 28 x 28 image into a one-dimensional vector of 784 values.
+
+30. Why is the input size 784?
+Because 28 multiplied by 28 equals 784 pixels.
+
+31. What is nn.Linear()?
+It creates a fully connected layer in which each input neuron is connected to each output neuron.
+
+32. What is the architecture of your best recorded model?
+784 input features, 256 neurons in the first hidden layer, 128 neurons in the second hidden layer, and 10 output neurons. ReLU is used after each hidden layer.
+
+33. Why are there 10 output neurons?
+There are 10 possible digit classes, from 0 to 9, so the output layer contains 10 neurons.
+
+34. What is a fully connected layer?
+A layer in which every neuron is connected to every neuron in the previous layer.
+
+35. What is an activation function?
+An activation function introduces non-linearity into a neural network so that it can learn complex patterns.
+
+36. Which activation function is used in your notebook?
+ReLU (Rectified Linear Unit).
+
+37. What is ReLU?
+ReLU returns zero for negative inputs and returns the input itself for positive inputs. Formula: f(x) = max(0, x).
+
+38. Why is ReLU used?
+It is simple, computationally efficient, and helps neural networks learn nonlinear relationships.
+
+39. What is Tanh activation?
+Tanh is an activation function that maps values to the range -1 to +1.
+
+40. What is the difference between ReLU and Tanh?
+ReLU outputs values from 0 to infinity and is commonly used in hidden layers. Tanh outputs values between -1 and +1.
+
+41. Does your uploaded code tune activation functions?
+No. The uploaded notebook uses ReLU for every hidden layer. It compares different hidden-layer configurations. To tune activation functions, another activation such as Tanh must be added and evaluated.
+
+42. Which hidden-layer configurations are compared?
+[128], [256], and [256, 128].
+
+43. Why do we tune hidden layers?
+To find an architecture that provides good performance without unnecessary complexity.
+
+44. What happens if we use too few hidden neurons?
+The model may not have enough capacity to learn complex patterns, resulting in underfitting.
+
+45. What happens if we use too many hidden neurons?
+The model becomes larger, requires more computation, and may overfit the training data.
+
+SECTION D: TRAINING, LOSS AND OPTIMIZATION
+
+46. What is an epoch?
+One epoch means one complete pass through the entire training dataset.
+
+47. How many epochs are used in your practical?
+10 epochs.
+
+48. What is a loss function?
+A loss function measures the difference between the model's predictions and the actual target labels.
+
+49. Which loss function is used?
+CrossEntropyLoss.
+
+50. Why do we use CrossEntropyLoss?
+It is commonly used for multi-class classification. It compares the model's class scores with the correct class labels.
+
+51. What is an optimizer?
+An optimizer updates the model's learnable parameters to minimize the loss.
+
+52. Which optimizer is used in your practical?
+Adam optimizer.
+
+53. What is Adam?
+Adam is an optimization algorithm that adapts the learning rate for each parameter using estimates of gradients and squared gradients.
+
+54. What is the learning rate used in your code?
+0.001.
+
+55. What is the purpose of optimizer.zero_grad()?
+It clears the gradients from the previous training step before calculating new gradients.
+
+56. What does loss.backward() do?
+It calculates gradients of the loss with respect to the model parameters using backpropagation.
+
+57. What does optimizer.step() do?
+It updates the model parameters using the gradients calculated during backpropagation.
+
+58. What is backpropagation?
+Backpropagation calculates gradients of the loss with respect to network parameters, moving backward through the network.
+
+59. What is gradient descent?
+It is an optimization method that updates parameters in the direction that reduces the loss.
+
+60. What is the difference between loss.backward() and optimizer.step()?
+loss.backward() calculates gradients. optimizer.step() uses those gradients to update the parameters.
+
+61. Why do we use model.train()?
+It puts the model into training mode.
+
+62. Why do we use model.eval()?
+It puts the model into evaluation mode. This is important for layers such as dropout and batch normalization.
+
+63. What is torch.no_grad()?
+It disables gradient calculation, reducing memory use and computation during evaluation.
+
+64. What is running_loss?
+It accumulates the batch loss values during an epoch so that average training loss can be calculated.
+
+65. Why do we divide running_loss by len(train_loader)?
+To calculate the average loss across all training batches in that epoch.
+
+SECTION E: PREDICTION AND EVALUATION
+
+66. What is classification accuracy?
+Accuracy is the percentage of correctly predicted samples out of the total evaluated samples.
+
+67. What is the formula for accuracy?
+Accuracy = (Number of correct predictions / Total predictions) x 100.
+
+68. How do you calculate predictions in your code?
+Using torch.max(outputs, 1), which selects the class index with the highest output score.
+
+69. What does torch.max(outputs, 1) return?
+It returns the maximum value and its index along dimension 1. The index represents the predicted class.
+
+70. Why do we use predicted == labels?
+It compares predicted classes with actual labels to count correct predictions.
+
+71. What is the difference between training accuracy and testing accuracy?
+Training accuracy measures performance on training data. Testing accuracy measures performance on unseen test data.
+
+72. What is generalization?
+Generalization is the ability of a trained model to perform well on new, unseen data.
+
+73. What is overfitting?
+Overfitting occurs when a model performs very well on training data but poorly on unseen data.
+
+74. What is underfitting?
+Underfitting occurs when a model is too simple or insufficiently trained to learn the patterns in the data.
+
+75. What is a confusion matrix?
+A confusion matrix is a table that compares actual classes with predicted classes and shows correct and incorrect classifications.
+
+76. What do diagonal values in a confusion matrix represent?
+They represent correctly classified samples for each class.
+
+77. What do off-diagonal values represent?
+They represent incorrect predictions, where one class is predicted as another class.
+
+78. Why do you visualize sample predictions?
+To compare actual and predicted labels and visually check the model's classification results.
+
+79. What does squeeze() do in your image visualization?
+It removes dimensions of size one from a tensor, making it suitable for displaying as a 2D image.
+
+80. Why do you use cmap='gray'?
+It displays the handwritten digit image in grayscale.
+
+SECTION F: LOSS AND ACCURACY CURVES
+
+81. Why do we plot training loss?
+To observe how the model's error changes during training.
+
+82. Why do we plot training accuracy?
+To observe how the percentage of correct training predictions changes across epochs.
+
+83. What should happen to training loss during successful training?
+It generally decreases as the model learns, although small fluctuations may occur.
+
+84. What should happen to training accuracy during successful training?
+It generally increases as the model learns.
+
+85. What does high training accuracy but low testing accuracy indicate?
+It may indicate overfitting.
+
+86. What does a decreasing loss curve indicate?
+It indicates that the model is generally improving its fit to the training data.
+
+87. Which Matplotlib function is used to plot the curves?
+plt.plot().
+
+88. What is the purpose of plt.subplot()?
+It divides a figure into multiple plotting areas.
+
+89. What is the purpose of plt.tight_layout()?
+It adjusts spacing between plots to prevent labels and titles from overlapping.
+
+90. Does your notebook plot test loss and test accuracy curves?
+No. It plots training loss and training accuracy curves, then calculates final test accuracy separately.
+
+SECTION G: PYTORCH AND IMPORTANT CODE QUESTIONS
+
+91. What is a tensor?
+A tensor is a multidimensional array used by PyTorch to store and process data.
+
+92. What is the difference between NumPy arrays and PyTorch tensors?
+Both store numerical data, but PyTorch tensors support automatic differentiation and GPU computation.
+
+93. What is automatic differentiation?
+It is the process of automatically calculating derivatives or gradients of operations.
+
+94. Can PyTorch use a GPU?
+Yes. PyTorch supports GPU computation using CUDA-compatible NVIDIA GPUs.
+
+95. What is CUDA?
+CUDA is NVIDIA's parallel computing platform that allows compatible GPUs to perform computations.
+
+96. Why is model.parameters() passed to Adam?
+It provides the model's learnable weights and biases to the optimizer.
+
+97. What does outputs contain?
+It contains the model's raw class scores, also called logits, for each image.
+
+98. Does the model use Softmax explicitly in the output layer?
+No. CrossEntropyLoss accepts raw logits and internally performs the required log-softmax operation.
+
+99. Why are labels not one-hot encoded in this code?
+CrossEntropyLoss accepts class indices directly, so integer labels from 0 to 9 are sufficient.
+
+100. What is the purpose of confusion_matrix()?
+It calculates the confusion matrix using actual labels and predicted labels.
+
+101. What is ConfusionMatrixDisplay()?
+It is a Scikit-learn utility used to display a confusion matrix graphically.
+
+SECTION H: COMPARISON AND APPLICATION QUESTIONS
+
+102. What is the difference between MLP and CNN?
+An MLP uses fully connected layers and generally flattens the input. A CNN uses convolutional layers that learn spatial features from images.
+
+103. Why might CNN perform better than MLP on image data?
+CNN preserves spatial structure and learns local patterns such as edges and shapes using convolution filters.
+
+104. What are applications of feedforward neural networks?
+Classification, prediction, pattern recognition, handwritten digit recognition, and basic regression tasks.
+
+105. Can an MLP solve classification problems?
+Yes. It can classify data into two or more classes.
+
+106. What is multiclass classification?
+It is a classification problem in which an input belongs to one of more than two possible classes.
+
+107. Is MNIST binary or multiclass classification?
+It is a multiclass classification problem with 10 classes.
+
+108. Why is this a supervised learning task?
+Because the MNIST training dataset contains images with their corresponding digit labels.
+
+109. What is the output of the MNIST model?
+The model produces 10 class scores for each image, one for each digit from 0 to 9.
+
+110. What is the main limitation of an MLP for image classification?
+Flattening images loses their explicit spatial arrangement, and fully connected layers can require many parameters.
+
+SECTION I: QUESTIONS ABOUT YOUR PRACTICAL RESULTS
+
+111. Which hidden-layer configuration achieved the best recorded accuracy in your notebook?
+The [256, 128] configuration achieved the best recorded accuracy.
+
+112. What was the best recorded test accuracy?
+98.10%.
+
+113. Which activation function was used for the recorded experiment?
+ReLU.
+
+114. What was the batch size?
+64.
+
+115. What was the learning rate?
+0.001.
+
+116. Which optimizer was used?
+Adam.
+
+117. Which loss function was used?
+CrossEntropyLoss.
+
+118. How many epochs were used?
+10.
+
+119. What is the input dimension?
+784 features, obtained by flattening a 28 x 28 image.
+
+120. What is the output dimension?
+10, corresponding to the 10 digit classes.
+
+MOST IMPORTANT QUESTIONS TO PREPARE FIRST
+
+1. What is a Feedforward Neural Network?
+2. What is an MLP?
+3. What is MNIST?
+4. Why do we flatten the 28 x 28 image?
+5. Why are there 784 input features?
+6. Why are there 10 output neurons?
+7. What is nn.Linear()?
+8. What is nn.Sequential()?
+9. What is ReLU activation?
+10. What is CrossEntropyLoss?
+11. What is the Adam optimizer?
+12. What is backpropagation?
+13. What does loss.backward() do?
+14. What does optimizer.step() do?
+15. What is an epoch?
+16. What is batch size?
+17. What is the learning rate?
+18. What is overfitting?
+19. What is a confusion matrix?
+20. What is the difference between training and testing accuracy?
+21. Explain the architecture of your best model.
+22. Which hidden-layer configuration gave the best accuracy?
+23. Why do we use model.train() and model.eval()?
+24. What is torch.no_grad()?
+25. Does your current code tune activation functions?
+
+IMPORTANT CODE LINES TO UNDERSTAND
+
+1. layers = [nn.Flatten()]
+Converts each 28 x 28 image into a vector of 784 values.
+
+2. layers.append(nn.Linear(in_features, neurons))
+Adds a fully connected layer.
+
+3. layers.append(nn.ReLU())
+Applies the ReLU activation function.
+
+4. layers.append(nn.Linear(in_features, 10))
+Creates the output layer with 10 neurons.
+
+5. criterion = nn.CrossEntropyLoss()
+Defines the loss function for multiclass classification.
+
+6. optimizer = optim.Adam(model.parameters(), lr=0.001)
+Creates the Adam optimizer with a learning rate of 0.001.
+
+7. optimizer.zero_grad()
+Clears previously stored gradients.
+
+8. loss.backward()
+Calculates gradients using backpropagation.
+
+9. optimizer.step()
+Updates the model parameters.
+
+10. _, predicted = torch.max(outputs, 1)
+Selects the class with the highest score as the prediction.
+
+11. model.eval()
+Sets the model to evaluation mode.
+
+12. with torch.no_grad():
+Disables gradient calculations during evaluation.
+
+13. accuracy = 100 * correct / total
+Calculates classification accuracy as a percentage.
+
+14. cm = confusion_matrix(all_labels, all_preds)
+Calculates the confusion matrix.
+
+PRACTICAL RESULT SUMMARY
+
+The feedforward neural network (MLP) was successfully implemented using PyTorch and trained on the MNIST handwritten digit dataset. Different hidden-layer configurations were evaluated. The best recorded configuration was [256, 128], achieving 98.10% test accuracy with ReLU activation. Training loss and accuracy curves were plotted, sample predictions were visualized, and a confusion matrix was generated.
+
+END OF PRACTICAL 2 VIVA QUESTIONS

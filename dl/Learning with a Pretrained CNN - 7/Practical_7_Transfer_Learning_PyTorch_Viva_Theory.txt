@@ -1,0 +1,673 @@
+DEEP LEARNING PRACTICAL 7
+TRANSFER LEARNING WITH A PRETRAINED CNN USING PYTORCH
+THEORY, VIVA QUESTIONS AND ANSWERS
+
+PRACTICAL ASSIGNMENT
+1. Load a pretrained CNN such as ResNet50 or VGG16.
+2. Fine-tune it on a small custom dataset such as Cats vs Dogs.
+3. Freeze selected layers and experiment with performance.
+
+IMPLEMENTATION COVERED IN THIS GUIDE
+- Framework: PyTorch
+- Computer vision library: torchvision
+- Pretrained model: ResNet50
+- Pretrained weights: ImageNet
+- Dataset: Cats vs Dogs
+- Classification type: Binary image classification
+- Classes: cats and dogs
+- Input size: 224 x 224 RGB
+- Batch size: 32
+- Training subset: up to 2,000 images
+- Testing subset: up to 500 images
+- Loss: CrossEntropyLoss
+- Optimizer: Adam
+- Frozen classifier training: 5 epochs
+- Fine-tuning: 5 epochs
+- Fine-tuned block: ResNet50 layer4
+- Learning rate for classifier: 0.001
+- Learning rate for fine-tuning: 0.00001
+
+============================================================
+SECTION 1: BASIC THEORY AND PRACTICAL OVERVIEW
+============================================================
+
+1. What is the aim of this practical?
+Ans: To use a pretrained CNN for image classification, adapt it to a smaller custom dataset, freeze selected layers, fine-tune selected layers and compare performance.
+
+2. What is transfer learning?
+Ans: Transfer learning is a technique in which knowledge learned by a model on one task or dataset is reused for a different but related task.
+
+3. Why is transfer learning useful?
+Ans: It reduces training time and the amount of data required because the model already contains useful learned features.
+
+4. Which framework is used in this practical?
+Ans: PyTorch.
+
+5. Which library provides pretrained CNN models in PyTorch?
+Ans: torchvision, especially torchvision.models.
+
+6. Which pretrained model is used in this practical?
+Ans: ResNet50 pretrained on ImageNet.
+
+7. Which dataset is used?
+Ans: Cats vs Dogs.
+
+8. What type of classification problem is Cats vs Dogs?
+Ans: Binary image classification because there are two classes: cats and dogs.
+
+9. What is image classification?
+Ans: Image classification is the task of assigning an image to one class from a predefined set of classes.
+
+10. What is a pretrained model?
+Ans: A pretrained model is a model whose parameters have already been learned by training on a dataset, usually a large dataset.
+
+11. What is the difference between training from scratch and transfer learning?
+Ans: Training from scratch starts with randomly initialized weights and learns features from the new dataset. Transfer learning starts with weights learned from a previous dataset and adapts them to the new task.
+
+12. What is the main output of this practical?
+Ans: A model that predicts whether an image contains a cat or a dog, along with a comparison of frozen and fine-tuned model performance.
+
+============================================================
+SECTION 2: IMAGENET AND PRETRAINED MODELS
+============================================================
+
+13. What is ImageNet?
+Ans: ImageNet is a large image database commonly used to train and evaluate image-recognition models.
+
+14. Why are ImageNet weights used?
+Ans: They provide general visual features such as edges, textures, shapes and object parts that can be useful for a new image-classification task.
+
+15. What is torchvision?
+Ans: torchvision is a PyTorch library that provides computer-vision datasets, image transformations, pretrained models and utilities.
+
+16. What does ResNet50_Weights.DEFAULT mean?
+Ans: It selects the default recommended pretrained weights for ResNet50 provided by torchvision.
+
+17. What does pretrained=True mean in older torchvision code?
+Ans: It requests pretrained model weights. Newer torchvision versions use the weights argument instead.
+
+18. Does pretrained ResNet50 directly classify Cats vs Dogs?
+Ans: Not with its original classifier. The original classifier is designed for ImageNet classes, so it must be replaced for the new task.
+
+19. What is feature extraction?
+Ans: Feature extraction uses a pretrained network to generate useful image representations while keeping its pretrained parameters fixed.
+
+20. What is fine-tuning?
+Ans: Fine-tuning means continuing the training of a pretrained model on the target dataset by updating some or all of its pretrained parameters.
+
+21. What is the difference between feature extraction and fine-tuning?
+Ans: Feature extraction freezes pretrained layers and trains only the new classifier. Fine-tuning unfreezes selected pretrained layers and updates them on the new dataset.
+
+22. Why is transfer learning useful with a small dataset?
+Ans: The pretrained network already knows useful visual patterns, so the new dataset does not need to teach every feature from the beginning.
+
+23. Can transfer learning be used for datasets other than Cats vs Dogs?
+Ans: Yes. It can be used for many image-classification tasks when the pretrained features are useful for the new task.
+
+============================================================
+SECTION 3: RESNET50 ARCHITECTURE
+============================================================
+
+24. What is ResNet?
+Ans: ResNet stands for Residual Network. It is a deep CNN architecture that uses skip connections to make training deep networks easier.
+
+25. What does ResNet50 mean?
+Ans: ResNet50 is a ResNet architecture with approximately 50 layers, depending on the layer-counting convention.
+
+26. What is a residual connection?
+Ans: A residual connection adds the input of a block to the transformed output of that block, providing a shortcut path for information and gradients.
+
+27. Why are skip connections used in ResNet?
+Ans: They help address optimization difficulties in very deep networks and make deeper networks easier to train.
+
+28. What is a residual block?
+Ans: A residual block is a group of layers with a shortcut connection that adds the block input to its transformed output.
+
+29. What is the role of convolutional layers?
+Ans: They learn visual features such as edges, textures and more complex patterns.
+
+30. What is the role of the final fully connected layer?
+Ans: It converts the learned feature representation into class scores.
+
+31. Why replace the final layer of ResNet50?
+Ans: The original final layer predicts 1,000 ImageNet classes, whereas Cats vs Dogs has only two classes.
+
+32. What is the output size of the new classifier?
+Ans: Two output scores, one for cat and one for dog, when using CrossEntropyLoss.
+
+33. What is VGG16?
+Ans: VGG16 is a CNN architecture with 16 weight layers. It commonly uses small 3 x 3 convolution filters.
+
+34. What is the difference between ResNet50 and VGG16?
+Ans: ResNet50 uses residual skip connections and is generally more parameter-efficient than the original VGG16. VGG16 has a simpler sequential architecture but a large fully connected classifier.
+
+35. Can VGG16 be used for this assignment?
+Ans: Yes. VGG16 is another valid pretrained CNN. Its final classifier must be adapted to the target classes.
+
+============================================================
+SECTION 4: FREEZING AND UNFREEZING LAYERS
+============================================================
+
+36. What does freezing a layer mean?
+Ans: Freezing a layer means preventing its parameters from being updated during training.
+
+37. How do we freeze all pretrained layers in PyTorch?
+Ans: Set requires_grad=False for every parameter in the pretrained model.
+
+38. What does requires_grad=False do?
+Ans: It tells PyTorch not to calculate gradients for that parameter during backpropagation.
+
+39. Why freeze pretrained layers initially?
+Ans: It preserves learned ImageNet features and allows the new classifier to learn the target classes without changing the pretrained feature extractor.
+
+40. Which layers are trained first in transfer learning?
+Ans: Usually the newly added classification layer is trained first while the pretrained backbone remains frozen.
+
+41. What is a backbone?
+Ans: The backbone is the main pretrained feature-extraction part of a model.
+
+42. What is a classification head?
+Ans: The classification head is the final part of the network that maps extracted features to target class scores.
+
+43. How do we unfreeze layers in PyTorch?
+Ans: Set requires_grad=True for the parameters of the selected layers.
+
+44. Why unfreeze only the last few layers?
+Ans: Later layers learn more task-specific features, so updating them can adapt the network while retaining general features in earlier layers.
+
+45. Should all layers always be unfrozen?
+Ans: No. The choice depends on dataset size, similarity to ImageNet, computational resources and validation performance.
+
+46. What can happen if too many layers are unfrozen on a small dataset?
+Ans: The model may overfit or lose useful pretrained representations, especially if the learning rate is too high.
+
+47. What is partial fine-tuning?
+Ans: Partial fine-tuning updates only selected pretrained layers while keeping the remaining layers frozen.
+
+48. What is full fine-tuning?
+Ans: Full fine-tuning allows all pretrained model parameters to update on the target dataset.
+
+49. Why use a smaller learning rate during fine-tuning?
+Ans: Smaller updates help preserve useful pretrained features while adapting the model to the new task.
+
+50. Which ResNet50 block is unfrozen in this practical?
+Ans: The last major block, layer4. Earlier blocks layer1, layer2 and layer3 remain frozen.
+
+51. Is unfreezing layer4 the same as unfreezing exactly the last 20 layers?
+Ans: No. This practical unfreezes the layer4 module as a block. The number of individual parameterized layers is not necessarily exactly 20.
+
+============================================================
+SECTION 5: DATASET AND IMAGE PREPROCESSING
+============================================================
+
+52. What is image preprocessing?
+Ans: Image preprocessing prepares images for the model through operations such as resizing, converting to tensors and normalizing pixel values.
+
+53. What is ImageFolder in PyTorch?
+Ans: ImageFolder loads images arranged in class-specific subfolders and assigns labels based on folder names.
+
+54. How should the dataset folders be arranged?
+Ans:
+dataset/
+    training_set/
+        cats/
+        dogs/
+    test_set/
+        cats/
+        dogs/
+
+55. What does transforms.Resize((224, 224)) do?
+Ans: It resizes each image to 224 x 224 pixels, a common input size for standard pretrained ResNet50 weights.
+
+56. Why resize images?
+Ans: The model expects a consistent input size, and resizing ensures that images have compatible dimensions.
+
+57. What does transforms.ToTensor() do?
+Ans: It converts an image into a PyTorch tensor and scales typical 8-bit pixel values from 0-255 to 0-1.
+
+58. What is normalization?
+Ans: Normalization adjusts image channel values using specified means and standard deviations so that the input distribution matches the model's expected preprocessing.
+
+59. Why normalize images for pretrained ResNet50?
+Ans: The pretrained weights were learned using a particular input preprocessing pipeline. Matching it helps the pretrained model work correctly.
+
+60. What normalization values are used in this practical?
+Ans: Mean = [0.485, 0.456, 0.406] and standard deviation = [0.229, 0.224, 0.225].
+
+61. Why does ResNet50 expect three channels?
+Ans: Standard ResNet50 expects RGB images, which contain red, green and blue channels.
+
+62. What is data augmentation?
+Ans: Data augmentation creates varied training examples by applying transformations such as random flipping, cropping or rotation.
+
+63. Which augmentation techniques are used in this practical?
+Ans: RandomHorizontalFlip() and RandomRotation(10).
+
+64. Why use data augmentation?
+Ans: It can improve generalization and reduce overfitting by exposing the model to varied versions of training images.
+
+65. Should random augmentation be applied to test images?
+Ans: Usually no. Test images should use deterministic resizing and normalization so evaluation remains consistent.
+
+66. What is the difference between training and testing datasets?
+Ans: Training data is used to update model parameters. Testing data is used to evaluate the trained model on unseen examples.
+
+============================================================
+SECTION 6: DATA LOADING AND PYTORCH BASICS
+============================================================
+
+67. What is DataLoader?
+Ans: DataLoader creates batches from a dataset and supports shuffling and efficient data iteration.
+
+68. What is batch size?
+Ans: Batch size is the number of images processed together in one training iteration.
+
+69. What batch size is used in this practical?
+Ans: 32.
+
+70. What does shuffle=True do?
+Ans: It randomizes the order of training samples.
+
+71. Why is training data shuffled?
+Ans: Shuffling reduces dependence on sample order and can help training.
+
+72. Why is test data usually not shuffled?
+Ans: Shuffling is unnecessary for evaluation because metrics do not depend on sample order.
+
+73. What is an epoch?
+Ans: One epoch is one complete pass through the training dataset.
+
+74. What is CUDA?
+Ans: CUDA is NVIDIA's parallel computing platform that allows supported computations to run on NVIDIA GPUs.
+
+75. How do we check CUDA availability in PyTorch?
+Ans: Use torch.cuda.is_available().
+
+76. What does torch.device() do?
+Ans: It specifies the device, such as CPU or CUDA GPU, on which tensors and models should run.
+
+77. Why move the model and images to the same device?
+Ans: Model parameters and input tensors must be on the same device for computation.
+
+78. What does model.to(device) do?
+Ans: It moves the model's parameters and buffers to the selected device.
+
+79. What does images.to(device) do?
+Ans: It moves the image batch tensor to the selected device.
+
+80. What is KaggleHub used for in this practical?
+Ans: KaggleHub downloads the Cats vs Dogs dataset from Kaggle and provides its local path.
+
+81. Does the first run require internet?
+Ans: Yes. The first run requires internet to download the dataset and pretrained ImageNet weights. Later runs can use the locally cached files.
+
+============================================================
+SECTION 7: TRAINING, LOSS AND OPTIMIZATION
+============================================================
+
+82. What is a loss function?
+Ans: A loss function measures the difference between the model's predictions and the correct labels.
+
+83. Which loss function is used?
+Ans: CrossEntropyLoss.
+
+84. Why is CrossEntropyLoss used?
+Ans: It is commonly used for multi-class classification with raw class scores and integer class labels. It also works for two-class classification.
+
+85. What is an optimizer?
+Ans: An optimizer updates model parameters using gradients to reduce the loss.
+
+86. Which optimizer is used?
+Ans: Adam.
+
+87. What is Adam?
+Ans: Adam is an adaptive optimization algorithm that uses moving estimates of gradients and squared gradients to update parameters.
+
+88. What is the learning rate?
+Ans: The learning rate controls the size of parameter updates during optimization.
+
+89. What learning rate is used for the new classifier?
+Ans: 0.001.
+
+90. What learning rate is used for fine-tuning?
+Ans: 0.00001.
+
+91. Why is the fine-tuning learning rate smaller?
+Ans: It helps make careful updates to pretrained weights and reduces the risk of damaging useful learned features.
+
+92. What is backpropagation?
+Ans: Backpropagation calculates gradients of the loss with respect to model parameters using the chain rule.
+
+93. What does loss.backward() do?
+Ans: It calculates gradients for parameters that require gradients.
+
+94. What does optimizer.step() do?
+Ans: It updates model parameters using the calculated gradients.
+
+95. Why is optimizer.zero_grad() used?
+Ans: PyTorch accumulates gradients by default. zero_grad() clears old gradients before calculating new ones.
+
+96. What does model.train() do?
+Ans: It sets the model to training mode. Layers such as dropout and batch normalization may behave differently in this mode.
+
+97. What does model.eval() do?
+Ans: It sets the model to evaluation mode, changing the behaviour of layers such as dropout and batch normalization.
+
+98. Why is torch.no_grad() used during testing?
+Ans: It disables gradient tracking, reducing memory usage and computation when gradients are not needed.
+
+99. What is overfitting?
+Ans: Overfitting occurs when a model performs well on training data but poorly on unseen data.
+
+100. How can overfitting be reduced?
+Ans: Use data augmentation, dropout, weight decay, early stopping, more training data or a smaller model.
+
+============================================================
+SECTION 8: ACCURACY AND PERFORMANCE COMPARISON
+============================================================
+
+101. What is accuracy?
+Ans: Accuracy is the percentage of correctly classified samples out of all evaluated samples.
+
+102. What is the formula for accuracy?
+Ans: Accuracy = (Correct predictions / Total predictions) x 100.
+
+103. What does torch.max(outputs, 1) do?
+Ans: It returns the maximum score and its index along dimension 1. The index is treated as the predicted class.
+
+104. Why compare frozen and fine-tuned models?
+Ans: The comparison shows whether updating selected pretrained layers improves performance on the target dataset.
+
+105. Does fine-tuning always improve accuracy?
+Ans: No. Fine-tuning may improve, maintain or reduce accuracy depending on the dataset, learning rate, training duration and model configuration.
+
+106. What does a higher test accuracy indicate?
+Ans: A higher test accuracy means a larger percentage of test images were classified correctly.
+
+107. What does decreasing training loss indicate?
+Ans: It generally indicates that the model is fitting the training data better.
+
+108. Can a model have low training loss but poor test accuracy?
+Ans: Yes. This can indicate overfitting or a mismatch between training and test data.
+
+109. What is generalization?
+Ans: Generalization is the ability of a trained model to perform well on new, unseen data.
+
+110. Why store loss and accuracy in lists?
+Ans: The lists store epoch-wise results so they can be printed or plotted after training.
+
+111. What does plt.plot() do?
+Ans: It draws a line graph using the supplied values.
+
+112. What does plt.legend() do?
+Ans: It displays labels for the plotted lines.
+
+113. What does plt.show() do?
+Ans: It displays the graph.
+
+114. What is the purpose of the accuracy graph?
+Ans: It compares frozen and fine-tuned model accuracy over epochs.
+
+115. What is the purpose of the loss graph?
+Ans: It compares training loss over epochs for the two training phases.
+
+116. What should be done if fine-tuning reduces accuracy?
+Ans: Check the learning rate, dataset quality, augmentation, training duration and overfitting. Try a smaller learning rate or unfreeze fewer layers.
+
+============================================================
+SECTION 9: CODE-BASED VIVA QUESTIONS
+============================================================
+
+117. Why import torch?
+Ans: It imports the PyTorch library.
+
+118. Why import torch.nn?
+Ans: It provides neural-network layers, loss functions and model-building utilities.
+
+119. Why import torch.optim?
+Ans: It provides optimization algorithms such as SGD and Adam.
+
+120. Why import torchvision?
+Ans: It provides computer-vision datasets, transformations and pretrained models.
+
+121. What does resnet50(weights=ResNet50_Weights.DEFAULT) do?
+Ans: It creates a ResNet50 model and loads the default pretrained weights.
+
+122. What does model.fc represent in ResNet50?
+Ans: It represents the final fully connected classification layer.
+
+123. What does model.fc.in_features return?
+Ans: It returns the number of input features expected by the original fully connected layer.
+
+124. Why use nn.Linear(num_features, 2)?
+Ans: It replaces the original ImageNet classifier with a layer that produces two class scores for cats and dogs.
+
+125. Why use nn.Dropout(0.5)?
+Ans: Dropout randomly disables some activations during training, which can help reduce overfitting.
+
+126. What does nn.Sequential do?
+Ans: It creates a sequence of layers where each layer receives the previous layer's output.
+
+127. What does model.parameters() return?
+Ans: It provides the model's parameters, which can be passed to an optimizer.
+
+128. What does filter(lambda p: p.requires_grad, model.parameters()) do?
+Ans: It selects only parameters that are allowed to receive gradient updates.
+
+129. Why is the optimizer changed before fine-tuning?
+Ans: The new optimizer includes the unfrozen layer4 parameters and uses a smaller learning rate.
+
+130. Why is model.eval() used before prediction?
+Ans: It switches the model to evaluation mode so dropout and batch normalization behave appropriately.
+
+131. What does Image.open(image_path).convert("RGB") do?
+Ans: It opens an image file and converts it into a three-channel RGB image.
+
+132. What does unsqueeze(0) do?
+Ans: It adds a batch dimension to a single image tensor.
+
+133. What does prediction.item() do?
+Ans: It converts a single-value tensor into a standard Python number.
+
+134. Why use CrossEntropyLoss with two output neurons?
+Ans: The two output logits represent the cat and dog classes. CrossEntropyLoss compares these scores with integer class labels.
+
+============================================================
+SECTION 10: IMPORTANT DIFFERENCES
+============================================================
+
+135. Transfer learning vs training from scratch
+
+Transfer learning:
+- Starts with pretrained weights.
+- Reuses learned features.
+- Often requires less data and training time.
+- Can freeze or fine-tune selected layers.
+
+Training from scratch:
+- Starts with randomly initialized weights.
+- Learns features from the target dataset.
+- Usually requires more data and computation.
+- All model layers are trained from the beginning.
+
+136. Feature extraction vs fine-tuning
+
+Feature extraction:
+- Pretrained layers remain frozen.
+- Only the new classifier is trained.
+- Faster and less computationally expensive.
+
+Fine-tuning:
+- Selected pretrained layers are unfrozen.
+- Their weights are updated on the new dataset.
+- Can adapt features more closely to the target task.
+
+137. Frozen layers vs trainable layers
+
+Frozen layers:
+- requires_grad=False.
+- Their parameters are not updated by the optimizer.
+- Retain pretrained weights.
+
+Trainable layers:
+- requires_grad=True.
+- Gradients are calculated.
+- Their parameters can be updated by the optimizer.
+
+138. ResNet50 vs VGG16
+
+ResNet50:
+- Uses residual connections.
+- Supports deeper networks.
+- Helps optimization through shortcut connections.
+
+VGG16:
+- Uses a sequential architecture.
+- Commonly uses 3 x 3 convolution filters.
+- Has a large fully connected classifier in its original form.
+
+139. Training mode vs evaluation mode
+
+Training mode:
+- Set using model.train().
+- Used during model training.
+- Dropout and batch normalization use training behaviour.
+
+Evaluation mode:
+- Set using model.eval().
+- Used during testing and prediction.
+- Dropout and batch normalization use evaluation behaviour.
+
+============================================================
+SECTION 11: POSSIBLE EXAMINER QUESTIONS
+============================================================
+
+140. Why did you choose ResNet50?
+Ans: ResNet50 is a well-known pretrained CNN with residual connections. It provides useful ImageNet features and is supported by torchvision.
+
+141. Why use Cats vs Dogs?
+Ans: It is a simple binary image-classification dataset that clearly demonstrates adapting a pretrained CNN to a custom task.
+
+142. Why use 224 x 224 images?
+Ans: This is a standard input size for the selected ResNet50 ImageNet weights.
+
+143. Why use two output classes?
+Ans: The target task has two categories: cats and dogs.
+
+144. Why use a pretrained model instead of a CNN built from scratch?
+Ans: The pretrained model already contains useful visual features, reducing the amount of training needed on the smaller custom dataset.
+
+145. Why freeze layers first?
+Ans: To preserve pretrained features while training the new classification head.
+
+146. Why unfreeze layer4?
+Ans: It is a later feature-extraction block. Updating it can adapt higher-level features to the Cats vs Dogs task.
+
+147. Why keep layer1, layer2 and layer3 frozen?
+Ans: Earlier layers contain general visual features. Keeping them frozen reduces the number of trainable parameters and can help prevent overfitting on a small dataset.
+
+148. Why use a lower learning rate for fine-tuning?
+Ans: To make small updates to the pretrained weights and preserve useful representations.
+
+149. What is the role of dropout?
+Ans: It can reduce overfitting by randomly disabling activations during training.
+
+150. What is the role of ImageFolder?
+Ans: It loads images from class-specific folders and assigns numeric labels to the classes.
+
+151. What happens if the dataset folder structure is incorrect?
+Ans: ImageFolder may not find the expected classes or may assign labels incorrectly. The folder structure should contain one subfolder per class.
+
+152. Why use a separate test folder?
+Ans: It provides images not used for parameter updates, allowing evaluation on unseen examples.
+
+153. What is the limitation of this practical?
+Ans: The Cats vs Dogs dataset is relatively small and limited to two classes. Performance on this dataset does not guarantee performance on all real-world images.
+
+154. How can you improve this model?
+Ans: Use more training images, tune learning rates, apply suitable augmentation, train for more epochs with validation monitoring, use weight decay and experiment with different unfreezing strategies.
+
+155. What is the conclusion of this practical?
+Ans: Transfer learning allows a pretrained CNN to be adapted to a custom image-classification task. Freezing layers trains the new classifier, while fine-tuning selected layers adapts pretrained features. Comparing both approaches shows how layer selection affects performance.
+
+============================================================
+SECTION 12: IMPORTANT FORMULAS AND QUICK REVISION
+============================================================
+
+1. Accuracy:
+   Accuracy = (Correct Predictions / Total Predictions) x 100
+
+2. Cross-entropy classification:
+   The model outputs two raw class scores (logits), and CrossEntropyLoss compares them with the integer target label.
+
+3. Input image:
+   224 x 224 x 3
+   Height x Width x RGB channels
+
+4. Practical settings:
+   Framework: PyTorch
+   Library: torchvision
+   Pretrained CNN: ResNet50
+   Pretrained weights: ImageNet
+   Dataset: Cats vs Dogs
+   Classes: 2
+   Input size: 224 x 224
+   Batch size: 32
+   Training subset: up to 2,000 images
+   Testing subset: up to 500 images
+   Optimizer: Adam
+   Loss function: CrossEntropyLoss
+   Classifier learning rate: 0.001
+   Fine-tuning learning rate: 0.00001
+   Frozen classifier training: 5 epochs
+   Fine-tuning: 5 epochs
+   Frozen layers: layer1, layer2, layer3
+   Unfrozen block: layer4
+   Classifier: Dropout(0.5) + Linear(num_features, 2)
+
+============================================================
+LAST-MINUTE VIVA PRIORITY
+============================================================
+
+Prepare these questions first if time is limited:
+
+1. What is transfer learning?
+2. Why is transfer learning useful?
+3. What is a pretrained CNN?
+4. What is ImageNet?
+5. What is ResNet50?
+6. What is a residual connection?
+7. What is the difference between ResNet50 and VGG16?
+8. What is feature extraction?
+9. What is fine-tuning?
+10. Difference between feature extraction and fine-tuning.
+11. What does freezing a layer mean?
+12. How do you freeze layers in PyTorch?
+13. What does requires_grad=False do?
+14. Why freeze pretrained layers initially?
+15. Why unfreeze layer4?
+16. Why use a smaller learning rate during fine-tuning?
+17. Why replace the final fully connected layer?
+18. Why are there two output neurons?
+19. What is ImageFolder?
+20. What is data augmentation?
+21. Why resize images to 224 x 224?
+22. Why normalize images?
+23. What is DataLoader and batch size?
+24. What is CrossEntropyLoss?
+25. What is Adam optimizer?
+26. What do zero_grad(), backward() and step() do?
+27. Difference between model.train() and model.eval().
+28. Why use torch.no_grad() during evaluation?
+29. How is accuracy calculated?
+30. Why compare frozen and fine-tuned performance?
+
+IMPORTANT NOTES ABOUT THE IMPLEMENTATION
+
+- The code uses KaggleHub to download the Cats vs Dogs dataset. Internet access is needed for the first download.
+- The code also downloads pretrained ResNet50 ImageNet weights if they are not already cached.
+- The code uses a subset of up to 2,000 training and 500 testing images to keep practical execution manageable.
+- The code trains the new classifier for 5 epochs, then fine-tunes ResNet50 layer4 for another 5 epochs.
+- The implementation evaluates on the selected test subset after every epoch for practical comparison. For a formal machine-learning experiment, use a separate validation split for model selection and reserve the test set for final evaluation.
+- Accuracy values depend on the actual dataset subset, random initialization, software and hardware. Do not memorize made-up output values. Use the values from your own run.
+- Fine-tuning does not guarantee an accuracy increase. It may improve, maintain or reduce performance.

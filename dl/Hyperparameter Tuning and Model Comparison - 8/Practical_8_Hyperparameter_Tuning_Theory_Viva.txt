@@ -1,0 +1,562 @@
+
+PRACTICAL 8: HYPERPARAMETER TUNING AND MODEL COMPARISON
+THEORY NOTES + VIVA QUESTIONS AND ANSWERS
+Framework: PyTorch | Dataset: MNIST | Model: CNN | Logging: TensorBoard
+
+============================================================
+PART 1: THEORY
+============================================================
+
+1. AIM
+To perform hyperparameter tuning on a Convolutional Neural Network (CNN) using the MNIST dataset by varying learning rate, batch size, and number of convolutional layers. The performance of different configurations is compared using accuracy, loss, and training time. TensorBoard is used to visualize training metrics.
+
+2. DATASET: MNIST
+- MNIST stands for Modified National Institute of Standards and Technology.
+- It contains 70,000 grayscale images of handwritten digits from 0 to 9.
+- 60,000 images are used for training and 10,000 for testing.
+- Each image has a size of 28 x 28 pixels.
+- There are 10 output classes (digits 0 to 9).
+- Pixel values are commonly normalized before training.
+- In this practical, MNIST is downloaded using torchvision.datasets.MNIST.
+
+3. CONVOLUTIONAL NEURAL NETWORK (CNN)
+A CNN is a deep learning model mainly used for image processing and image classification.
+Main layers:
+- Convolution layer: extracts features such as edges, curves, and patterns using filters.
+- ReLU activation: introduces non-linearity by replacing negative values with zero.
+- Max pooling: reduces spatial dimensions and retains prominent features.
+- Flatten: converts feature maps into a one-dimensional vector.
+- Fully connected layer: performs classification using extracted features.
+- Output layer: produces scores for the 10 digit classes.
+
+4. HYPERPARAMETERS
+Hyperparameters are settings selected before or during model training. They are not learned directly from the training data.
+
+A. Learning rate
+- Controls the size of each weight update.
+- A very high learning rate may cause unstable training or overshooting.
+- A very low learning rate may make training slow.
+- The practical compares 0.001, 0.01, and 0.0001.
+
+B. Batch size
+- Number of training samples processed before one optimizer update.
+- Small batch size: more frequent updates, potentially noisier gradients, lower memory use.
+- Large batch size: fewer updates per epoch, often smoother gradient estimates, higher memory use.
+- The practical compares 32, 64, and 128.
+
+C. Number of convolutional layers
+- Determines how many levels of image features the network can learn.
+- More layers can learn more complex features but may increase computation and overfitting risk.
+- The practical compares networks with 2 and 3 convolutional layers.
+
+5. MODEL TRAINING
+Typical training steps:
+1. Load and preprocess the dataset.
+2. Create the CNN architecture.
+3. Define loss function and optimizer.
+4. Pass a batch of images through the model (forward pass).
+5. Calculate prediction loss.
+6. Clear old gradients using optimizer.zero_grad().
+7. Calculate gradients using loss.backward().
+8. Update weights using optimizer.step().
+9. Repeat for all batches and epochs.
+10. Evaluate performance on validation/test data as appropriate.
+
+6. LOSS FUNCTION: CROSS-ENTROPY LOSS
+- CrossEntropyLoss is used for multi-class classification.
+- It compares the model's predicted class scores (logits) with the true class labels.
+- It combines LogSoftmax and Negative Log Likelihood Loss.
+- The model should output raw logits; do not apply Softmax before CrossEntropyLoss.
+
+7. OPTIMIZER: ADAM
+- Adam stands for Adaptive Moment Estimation.
+- It adapts the learning rate for each parameter using estimates of first and second moments of gradients.
+- It often converges efficiently and is widely used in deep learning.
+- In this practical, Adam is used with different learning rates.
+
+8. EPOCH, ITERATION, AND BATCH
+- Epoch: one complete pass through the entire training dataset.
+- Batch: a subset of the dataset processed together.
+- Iteration: one parameter update, usually after processing one batch.
+- If there are 60,000 training images and batch size is 100, there are 600 batches/iterations per epoch (if drop_last is false and the division is exact).
+
+9. PERFORMANCE METRICS
+Accuracy = (Number of correct predictions / Total predictions) x 100
+- Training loss: loss calculated on training data.
+- Validation loss/accuracy: used to compare configurations and tune hyperparameters.
+- Test accuracy: final unbiased performance estimate on a separate test dataset, used after selecting the configuration.
+- Training time: time taken to train the model.
+- Lower loss and higher accuracy are generally desirable, but also consider training time and overfitting.
+
+10. TENSORBOARD
+- TensorBoard is a visualization tool for monitoring machine learning experiments.
+- PyTorch uses torch.utils.tensorboard.SummaryWriter to log values.
+- add_scalar() records scalar values such as loss and accuracy.
+- Each experiment can use a separate log directory, such as runs/exp_A.
+- TensorBoard can display metric curves and help compare configurations.
+- Typical notebook commands:
+  %load_ext tensorboard
+  %tensorboard --logdir runs
+
+11. EXPERIMENT CONFIGURATIONS IN THIS PRACTICAL
+The notebook compares six configurations:
+- exp_A: learning rate 0.001, batch size 64, 2 convolutional layers.
+- exp_B: learning rate 0.01, batch size 64, 2 convolutional layers.
+- exp_C: learning rate 0.0001, batch size 64, 2 convolutional layers.
+- exp_D: learning rate 0.001, batch size 128, 2 convolutional layers.
+- exp_E: learning rate 0.001, batch size 32, 2 convolutional layers.
+- exp_F: learning rate 0.001, batch size 64, 3 convolutional layers.
+Number of epochs: 10.
+Optimizer: Adam.
+Loss function: CrossEntropyLoss.
+Dataset: MNIST.
+Architecture: configurable CNN.
+
+12. IMPORTANT METHODOLOGICAL POINT
+For a sound experiment:
+- Split the original training data into training and validation sets.
+- Train using the training set.
+- Compare hyperparameters using validation performance.
+- Do not repeatedly use the test set to select the best hyperparameters.
+- After selecting the best configuration, evaluate it once on the untouched test set.
+This avoids test-data leakage and gives a more reliable estimate of generalization performance.
+
+13. COMMON PYTORCH FUNCTIONS
+- model.train(): sets model to training mode.
+- model.eval(): sets model to evaluation mode.
+- torch.no_grad(): disables gradient calculation during evaluation.
+- optimizer.zero_grad(): clears gradients from the previous update.
+- loss.backward(): calculates gradients by backpropagation.
+- optimizer.step(): updates model parameters.
+- model.parameters(): returns model parameters.
+- DataLoader: loads data in batches.
+- transforms.Normalize(): normalizes image tensors.
+- SummaryWriter: writes TensorBoard logs.
+
+14. POSSIBLE OBSERVATIONS
+- A learning rate that is too high may make loss fluctuate or prevent convergence.
+- A learning rate that is too low may require more epochs to learn effectively.
+- Batch size affects update frequency, memory use, and training behavior.
+- A deeper CNN may learn richer features, but can take more time and may overfit.
+- The best configuration is the one that balances validation performance and training cost; it should not be assumed in advance.
+- Actual accuracy and timing depend on hardware, random initialization, data split, and software versions.
+
+============================================================
+PART 2: VIVA QUESTIONS AND ANSWERS
+============================================================
+
+BASIC QUESTIONS
+
+Q1. What is the aim of Practical 8?
+Ans. To tune CNN hyperparameters such as learning rate, batch size, and number of layers, compare model performance, and visualize metrics using TensorBoard.
+
+Q2. Which framework is used?
+Ans. PyTorch.
+
+Q3. Which dataset is used?
+Ans. MNIST handwritten digit dataset.
+
+Q4. What is MNIST?
+Ans. MNIST is a dataset of 70,000 grayscale handwritten digit images belonging to 10 classes, from 0 to 9.
+
+Q5. What is the size of each MNIST image?
+Ans. 28 x 28 pixels.
+
+Q6. How many classes are present in MNIST?
+Ans. Ten classes, representing digits 0 through 9.
+
+Q7. What is a CNN?
+Ans. A Convolutional Neural Network is a deep learning architecture that learns spatial features from images using convolutional filters.
+
+Q8. Why is CNN suitable for image classification?
+Ans. CNN learns local patterns such as edges, shapes, and textures while preserving spatial relationships in images.
+
+Q9. What is a hyperparameter?
+Ans. A hyperparameter is a configuration value set before training, such as learning rate, batch size, or number of layers.
+
+Q10. What is the difference between a parameter and a hyperparameter?
+Ans. Parameters, such as weights and biases, are learned during training. Hyperparameters are selected to control the training process.
+
+LEARNING RATE
+
+Q11. What is learning rate?
+Ans. Learning rate controls how much the model weights are changed during each optimizer update.
+
+Q12. Which learning rates are compared in this practical?
+Ans. 0.001, 0.01, and 0.0001.
+
+Q13. What happens if the learning rate is too high?
+Ans. Training may become unstable, the loss may fluctuate, or the model may fail to converge.
+
+Q14. What happens if the learning rate is too low?
+Ans. Training becomes slow and may require more epochs to reach a good solution.
+
+Q15. Why is learning rate tuning important?
+Ans. It helps find an update size that provides stable and efficient convergence.
+
+Q16. Which learning rate is always best?
+Ans. There is no universally best learning rate. It depends on the model, dataset, optimizer, and training setup.
+
+BATCH SIZE
+
+Q17. What is batch size?
+Ans. Batch size is the number of samples processed before one optimizer update.
+
+Q18. Which batch sizes are used?
+Ans. 32, 64, and 128.
+
+Q19. What is a small batch size?
+Ans. A small batch size processes fewer samples per update and generally causes more frequent, noisier updates.
+
+Q20. What is a large batch size?
+Ans. A large batch size processes more samples per update and generally uses more memory.
+
+Q21. Does batch size affect training time?
+Ans. Yes. It affects the number of updates per epoch, memory use, and hardware efficiency.
+
+Q22. What is the difference between batch and epoch?
+Ans. A batch is a subset of the dataset. An epoch is one complete pass through the training dataset.
+
+Q23. What is an iteration?
+Ans. An iteration is one training update, generally performed after processing one batch.
+
+CNN ARCHITECTURE
+
+Q24. Why are different numbers of convolutional layers tested?
+Ans. To study how network depth affects feature extraction, accuracy, and training time.
+
+Q25. Which layer counts are compared?
+Ans. Two and three convolutional layers.
+
+Q26. What does a convolution layer do?
+Ans. It applies learnable filters to an input image or feature map to extract features.
+
+Q27. What is a filter or kernel?
+Ans. A kernel is a small learnable matrix that moves across an image or feature map to detect patterns.
+
+Q28. What is a feature map?
+Ans. A feature map is the output produced when a convolution filter is applied to an input.
+
+Q29. What is ReLU?
+Ans. ReLU is an activation function defined as f(x) = max(0, x).
+
+Q30. Why is ReLU used?
+Ans. It introduces non-linearity and is computationally simple.
+
+Q31. What is pooling?
+Ans. Pooling reduces the spatial dimensions of feature maps.
+
+Q32. What is max pooling?
+Ans. Max pooling selects the maximum value from each local region.
+
+Q33. Why is max pooling used?
+Ans. It reduces computation and retains strong features.
+
+Q34. What is flattening?
+Ans. Flattening converts multi-dimensional feature maps into a one-dimensional vector.
+
+Q35. What is a fully connected layer?
+Ans. It connects each input feature to output neurons and uses the extracted features for classification.
+
+Q36. Why does the output layer have 10 neurons?
+Ans. MNIST has 10 digit classes, so the model produces 10 class scores.
+
+TRAINING AND OPTIMIZATION
+
+Q37. What is forward propagation?
+Ans. It is the process of passing input data through the network to obtain predictions.
+
+Q38. What is backpropagation?
+Ans. It calculates gradients of the loss with respect to model parameters using the chain rule.
+
+Q39. What is an optimizer?
+Ans. An optimizer updates model parameters using calculated gradients to minimize loss.
+
+Q40. Which optimizer is used?
+Ans. Adam optimizer.
+
+Q41. What is Adam?
+Ans. Adam stands for Adaptive Moment Estimation. It uses moving averages of gradients and squared gradients to adapt parameter updates.
+
+Q42. Why is Adam popular?
+Ans. It often provides efficient convergence and adapts updates for individual parameters.
+
+Q43. What is a loss function?
+Ans. A loss function measures the difference between model predictions and actual targets.
+
+Q44. Which loss function is used?
+Ans. CrossEntropyLoss.
+
+Q45. Why is CrossEntropyLoss used?
+Ans. It is suitable for multi-class classification problems such as classifying digits into 10 classes.
+
+Q46. Should Softmax be applied before PyTorch CrossEntropyLoss?
+Ans. No. CrossEntropyLoss expects raw logits and internally applies the required log-softmax operation.
+
+Q47. What does optimizer.zero_grad() do?
+Ans. It clears previously stored gradients before calculating gradients for the next batch.
+
+Q48. What does loss.backward() do?
+Ans. It computes gradients of the loss with respect to model parameters.
+
+Q49. What does optimizer.step() do?
+Ans. It updates model parameters using the gradients.
+
+Q50. What is an epoch?
+Ans. One complete pass through the entire training dataset.
+
+EVALUATION AND METRICS
+
+Q51. What is accuracy?
+Ans. Accuracy is the percentage of predictions that are correct.
+
+Q52. Give the formula for accuracy.
+Ans. Accuracy = (Correct predictions / Total predictions) x 100.
+
+Q53. What is training loss?
+Ans. It is the loss calculated using training data.
+
+Q54. What is validation accuracy?
+Ans. It is the percentage of correct predictions on a separate validation dataset used during model selection.
+
+Q55. What is test accuracy?
+Ans. It is the accuracy measured on a separate test dataset after model selection.
+
+Q56. Why should test data not be used for hyperparameter tuning?
+Ans. Repeatedly selecting configurations based on test results leaks information from the test set and makes the final evaluation biased.
+
+Q57. What is overfitting?
+Ans. Overfitting occurs when a model performs very well on training data but poorly on unseen data.
+
+Q58. How can overfitting be identified?
+Ans. Training accuracy may keep increasing while validation accuracy stops improving or decreases; validation loss may increase.
+
+Q59. What is underfitting?
+Ans. Underfitting occurs when a model is too simple or insufficiently trained to learn the patterns in the data.
+
+Q60. What is generalization?
+Ans. Generalization is the ability of a trained model to perform well on unseen data.
+
+Q61. Why measure training time?
+Ans. To compare the computational cost and efficiency of different configurations.
+
+Q62. Does higher accuracy always mean the best model?
+Ans. Not necessarily. Training time, model complexity, generalization, and stability should also be considered.
+
+TENSORBOARD
+
+Q63. What is TensorBoard?
+Ans. TensorBoard is a tool for visualizing and monitoring machine learning experiments.
+
+Q64. Why is TensorBoard used in this practical?
+Ans. It records and displays training metrics such as loss and accuracy for different experiments.
+
+Q65. Which PyTorch class is used for TensorBoard logging?
+Ans. torch.utils.tensorboard.SummaryWriter.
+
+Q66. What does SummaryWriter do?
+Ans. It writes scalar values and other experiment information to TensorBoard event files.
+
+Q67. What is add_scalar()?
+Ans. It logs a scalar value, such as loss or accuracy, against a training step or epoch.
+
+Q68. Why use separate log directories?
+Ans. Separate directories keep the records of different experiments organized and easy to compare.
+
+Q69. How can TensorBoard be launched in a notebook?
+Ans. Use %load_ext tensorboard and then %tensorboard --logdir runs.
+
+Q70. What is the benefit of visualizing loss?
+Ans. It helps understand whether the model is learning and whether training is stable.
+
+PYTORCH AND CODE-RELATED QUESTIONS
+
+Q71. What is torchvision?
+Ans. Torchvision is a PyTorch library that provides datasets, image transformations, and computer vision models.
+
+Q72. What is DataLoader?
+Ans. DataLoader provides batches of data and can shuffle the training samples.
+
+Q73. What is a transform?
+Ans. A transform is a preprocessing operation applied to data, such as converting an image to a tensor or normalizing it.
+
+Q74. Why normalize MNIST images?
+Ans. Normalization scales input values to a more suitable range and can help training become more stable.
+
+Q75. What does transforms.Normalize() do?
+Ans. It subtracts the specified mean and divides by the specified standard deviation for each channel.
+
+Q76. What does model.train() do?
+Ans. It puts the model in training mode, enabling training-specific behavior such as dropout.
+
+Q77. What does model.eval() do?
+Ans. It puts the model in evaluation mode, disabling training-specific behavior such as dropout.
+
+Q78. What is torch.no_grad()?
+Ans. It disables gradient tracking, reducing memory use during inference or evaluation.
+
+Q79. Why is model.eval() used during testing?
+Ans. It ensures layers such as dropout and batch normalization behave in evaluation mode.
+
+Q80. Why is torch.no_grad() used during testing?
+Ans. Gradients are not needed for evaluation, so disabling them saves memory and computation.
+
+Q81. What is an nn.Module?
+Ans. It is the base class used to define neural network models in PyTorch.
+
+Q82. What is nn.Conv2d?
+Ans. It is a PyTorch layer that performs a two-dimensional convolution.
+
+Q83. What is nn.MaxPool2d?
+Ans. It performs two-dimensional max pooling.
+
+Q84. What is nn.Linear?
+Ans. It is a fully connected linear layer.
+
+Q85. What does model.parameters() return?
+Ans. It returns the model's learnable parameters.
+
+Q86. What does torch.device do?
+Ans. It specifies the device, such as CPU or CUDA GPU, on which computations should run.
+
+Q87. What is CUDA?
+Ans. CUDA is NVIDIA's parallel computing platform that allows supported computations to run on NVIDIA GPUs.
+
+Q88. How can the code check GPU availability?
+Ans. By using torch.cuda.is_available().
+
+Q89. Why can GPU training be faster?
+Ans. GPUs can perform many parallel numerical operations, which are common in deep learning.
+
+Q90. What is a CSV file used for in this practical?
+Ans. It stores experiment results in tabular form for later analysis.
+
+EXPERIMENT AND COMPARISON QUESTIONS
+
+Q91. How many experiments are performed?
+Ans. Six configurations are compared.
+
+Q92. What is exp_A?
+Ans. Learning rate 0.001, batch size 64, and 2 convolutional layers.
+
+Q93. What is exp_B?
+Ans. Learning rate 0.01, batch size 64, and 2 convolutional layers.
+
+Q94. What is exp_C?
+Ans. Learning rate 0.0001, batch size 64, and 2 convolutional layers.
+
+Q95. What is exp_D?
+Ans. Learning rate 0.001, batch size 128, and 2 convolutional layers.
+
+Q96. What is exp_E?
+Ans. Learning rate 0.001, batch size 32, and 2 convolutional layers.
+
+Q97. What is exp_F?
+Ans. Learning rate 0.001, batch size 64, and 3 convolutional layers.
+
+Q98. How many epochs are used?
+Ans. Ten epochs.
+
+Q99. How is the best configuration selected?
+Ans. Compare validation accuracy and loss, while considering training time and generalization.
+
+Q100. Why keep other settings constant when comparing one hyperparameter?
+Ans. It helps identify the effect of the hyperparameter being changed.
+
+Q101. Which experiment changes the learning rate to 0.01?
+Ans. exp_B.
+
+Q102. Which experiment uses the smallest learning rate?
+Ans. exp_C, with learning rate 0.0001.
+
+Q103. Which experiment uses the largest batch size?
+Ans. exp_D, with batch size 128.
+
+Q104. Which experiment uses the smallest batch size?
+Ans. exp_E, with batch size 32.
+
+Q105. Which experiment has three convolutional layers?
+Ans. exp_F.
+
+Q106. Why is a results DataFrame useful?
+Ans. It organizes experiment metrics in rows and columns, making comparisons easier.
+
+Q107. Why sort the results by accuracy?
+Ans. It makes it easy to identify configurations with higher accuracy. For sound tuning, use validation accuracy for this selection.
+
+Q108. Why save results to CSV?
+Ans. CSV preserves the experiment results so they can be opened and analyzed later.
+
+Q109. What conclusion can be drawn from the experiment?
+Ans. Hyperparameters affect model accuracy, convergence, and training time. The best combination should be selected using validation results rather than assuming one setting is always best.
+
+Q110. Will the same configuration always produce exactly the same accuracy?
+Ans. Not necessarily. Results can vary due to random initialization, data shuffling, hardware, and software settings.
+
+IMPORTANT DIFFERENCE QUESTIONS
+
+Q111. Differentiate training data and validation data.
+Ans. Training data is used to update model weights. Validation data is used to evaluate configurations and tune hyperparameters without updating weights.
+
+Q112. Differentiate validation data and test data.
+Ans. Validation data is used during model selection. Test data is kept separate and used for final evaluation after selecting the model.
+
+Q113. Differentiate loss and accuracy.
+Ans. Loss measures the magnitude of prediction error according to a loss function. Accuracy measures the proportion of correct class predictions.
+
+Q114. Differentiate learning rate and batch size.
+Ans. Learning rate controls the size of parameter updates. Batch size controls the number of samples processed before each update.
+
+Q115. Differentiate epoch and iteration.
+Ans. An epoch is one full pass through the training dataset. An iteration is one update based on a batch.
+
+Q116. Differentiate shallow and deep CNN.
+Ans. A shallow CNN has fewer layers and generally lower computational cost. A deeper CNN can learn more complex hierarchical features but may need more computation and regularization.
+
+Q117. Differentiate parameter tuning and hyperparameter tuning.
+Ans. Parameter tuning through training learns weights and biases from data. Hyperparameter tuning selects settings such as learning rate and batch size.
+
+Q118. Differentiate CPU and GPU training.
+Ans. CPU training uses general-purpose processor cores. GPU training uses many parallel processing units and can accelerate deep learning workloads.
+
+Q119. Differentiate SGD and Adam.
+Ans. SGD updates parameters using gradients, often with a fixed learning rate. Adam adapts updates using moving averages of gradients and squared gradients.
+
+Q120. Differentiate classification and regression.
+Ans. Classification predicts discrete categories, while regression predicts continuous numerical values.
+
+============================================================
+PART 3: QUICK REVISION
+============================================================
+
+Aim: Hyperparameter tuning and model comparison using CNN.
+Framework: PyTorch.
+Dataset: MNIST.
+Image size: 28 x 28 grayscale.
+Classes: 10.
+Training images: 60,000.
+Test images: 10,000.
+Model: Configurable CNN.
+Optimizer: Adam.
+Loss: CrossEntropyLoss.
+Epochs: 10.
+Learning rates: 0.001, 0.01, 0.0001.
+Batch sizes: 32, 64, 128.
+Convolutional layers: 2 and 3.
+Experiments: 6.
+Logging tool: TensorBoard.
+PyTorch logging class: SummaryWriter.
+Result file: mnist_hyperparameter_results.csv.
+
+Key functions:
+optimizer.zero_grad() -> clears old gradients.
+loss.backward() -> calculates gradients.
+optimizer.step() -> updates weights.
+model.train() -> training mode.
+model.eval() -> evaluation mode.
+torch.no_grad() -> disables gradient calculation.
+add_scalar() -> logs scalar metrics.
+DataLoader -> loads data in batches.
+
+Remember:
+Use validation data to select hyperparameters. Keep test data untouched until final evaluation.

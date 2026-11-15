@@ -1,0 +1,284 @@
+pip install torch torchvision matplotlib numpy pillow kagglehub
+
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torchvision
+import torchvision.transforms as transforms
+import kagglehub
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+
+from torch.utils.data import DataLoader, Subset
+from torchvision.datasets import ImageFolder
+from torchvision.models import resnet50, ResNet50_Weights
+from PIL import Image
+
+# 1. Check device
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("Using device:", device)
+
+# 2. Download Cats vs Dogs dataset
+dataset_path = kagglehub.dataset_download("tongpython/cat-and-dog")
+print("Dataset downloaded:", dataset_path)
+
+# 3. Find training and testing folders
+train_dir = None
+test_dir = None
+
+for root, dirs, files in os.walk(dataset_path):
+
+    if os.path.basename(root) == "training_set":
+        if os.path.isdir(os.path.join(root, "cats")):
+            train_dir = root
+
+    if os.path.basename(root) == "test_set":
+        if os.path.isdir(os.path.join(root, "cats")):
+            test_dir = root
+
+if train_dir is None or test_dir is None:
+    raise FileNotFoundError("Dataset folders not found!")
+
+# 4. Image transformations
+train_transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomRotation(10),
+    transforms.ToTensor(),
+    transforms.Normalize(
+        [0.485, 0.456, 0.406],
+        [0.229, 0.224, 0.225]
+    )
+])
+
+test_transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(
+        [0.485, 0.456, 0.406],
+        [0.229, 0.224, 0.225]
+    )
+])
+
+# 5. Load dataset
+train_dataset = ImageFolder(train_dir, transform=train_transform)
+test_dataset = ImageFolder(test_dir, transform=test_transform)
+
+print("Classes:", train_dataset.classes)
+
+# Use smaller dataset for practical execution
+np.random.seed(42)
+
+train_indices = np.random.choice(
+    len(train_dataset), min(2000, len(train_dataset)),
+    replace=False
+)
+
+test_indices = np.random.choice(
+    len(test_dataset), min(500, len(test_dataset)),
+    replace=False
+)
+
+train_dataset = Subset(train_dataset, train_indices)
+test_dataset = Subset(test_dataset, test_indices)
+
+train_loader = DataLoader(
+    train_dataset, batch_size=32, shuffle=True
+)
+
+test_loader = DataLoader(
+    test_dataset, batch_size=32, shuffle=False
+)
+
+print("Training images:", len(train_dataset))
+print("Testing images:", len(test_dataset))
+
+# 6. Load pretrained ResNet50
+weights = ResNet50_Weights.DEFAULT
+model = resnet50(weights=weights)
+
+print("Pretrained ResNet50 loaded!")
+
+# 7. Freeze pretrained layers
+for param in model.parameters():
+    param.requires_grad = False
+
+# Replace final classification layer
+num_features = model.fc.in_features
+
+model.fc = nn.Sequential(
+    nn.Dropout(0.5),
+    nn.Linear(num_features, 2)
+)
+
+model = model.to(device)
+
+print("Pretrained layers frozen!")
+print("Custom classification layer added!")
+
+# 8. Loss function and optimizer
+criterion = nn.CrossEntropyLoss()
+
+optimizer = optim.Adam(
+    model.fc.parameters(),
+    lr=0.001
+)
+
+# 9. Training and evaluation function
+def train_model(model, train_loader, test_loader,
+                criterion, optimizer, epochs):
+
+    train_losses = []
+    test_accuracies = []
+
+    for epoch in range(epochs):
+
+        model.train()
+        running_loss = 0
+
+        for images, labels in train_loader:
+
+            images = images.to(device)
+            labels = labels.to(device)
+
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+            running_loss += loss.item()
+
+        avg_loss = running_loss / len(train_loader)
+        train_losses.append(avg_loss)
+
+        # Evaluation
+        model.eval()
+        correct = 0
+        total = 0
+
+        with torch.no_grad():
+
+            for images, labels in test_loader:
+
+                images = images.to(device)
+                labels = labels.to(device)
+
+                outputs = model(images)
+                _, predicted = torch.max(outputs, 1)
+
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+
+        accuracy = 100 * correct / total
+        test_accuracies.append(accuracy)
+
+        print(
+            f"Epoch [{epoch+1}/{epochs}] "
+            f"Loss: {avg_loss:.4f} "
+            f"Accuracy: {accuracy:.2f}%"
+        )
+
+    return train_losses, test_accuracies
+
+
+# 10. Train frozen ResNet50
+print("\nTraining Frozen ResNet50")
+
+frozen_loss, frozen_accuracy = train_model(
+    model, train_loader, test_loader,
+    criterion, optimizer, epochs=5
+)
+
+# 11. Unfreeze last ResNet50 block for fine-tuning
+for param in model.layer4.parameters():
+    param.requires_grad = True
+
+# Keep earlier layers frozen
+for param in model.layer1.parameters():
+    param.requires_grad = False
+
+for param in model.layer2.parameters():
+    param.requires_grad = False
+
+for param in model.layer3.parameters():
+    param.requires_grad = False
+
+print("\nLast ResNet50 block unfrozen!")
+
+# Use smaller learning rate
+optimizer = optim.Adam(
+    filter(lambda p: p.requires_grad, model.parameters()),
+    lr=0.00001
+)
+
+# 12. Fine-tune model
+print("\nFine-tuning ResNet50")
+
+fine_loss, fine_accuracy = train_model(
+    model, train_loader, test_loader,
+    criterion, optimizer, epochs=5
+)
+
+# 13. Compare performance
+print("\nFINAL RESULTS")
+print("-------------------------")
+
+print(
+    "Frozen ResNet50 Accuracy:",
+    f"{frozen_accuracy[-1]:.2f}%"
+)
+
+print(
+    "Fine-tuned ResNet50 Accuracy:",
+    f"{fine_accuracy[-1]:.2f}%"
+)
+
+improvement = fine_accuracy[-1] - frozen_accuracy[-1]
+print("Accuracy Change:", f"{improvement:+.2f}%")
+
+# 14. Plot accuracy comparison
+plt.figure(figsize=(8, 5))
+plt.plot(frozen_accuracy, label="Frozen ResNet50")
+plt.plot(fine_accuracy, label="Fine-tuned ResNet50")
+plt.xlabel("Epochs")
+plt.ylabel("Accuracy (%)")
+plt.title("Frozen vs Fine-tuned Accuracy")
+plt.legend()
+plt.grid()
+plt.show()
+
+# 15. Plot loss comparison
+plt.figure(figsize=(8, 5))
+plt.plot(frozen_loss, label="Frozen ResNet50")
+plt.plot(fine_loss, label="Fine-tuned ResNet50")
+plt.xlabel("Epochs")
+plt.ylabel("Training Loss")
+plt.title("Frozen vs Fine-tuned Loss")
+plt.legend()
+plt.grid()
+plt.show()
+
+# 16. Predict a new image
+image_path = input("Enter image path for prediction: ")
+
+image = Image.open(image_path).convert("RGB")
+input_image = test_transform(image).unsqueeze(0).to(device)
+
+model.eval()
+
+with torch.no_grad():
+    output = model(input_image)
+    _, prediction = torch.max(output, 1)
+
+classes = train_dataset.dataset.classes
+
+print("Predicted Class:", classes[prediction.item()])
+
+plt.imshow(image)
+plt.title("Predicted: " + classes[prediction.item()])
+plt.axis("off")
+plt.show()

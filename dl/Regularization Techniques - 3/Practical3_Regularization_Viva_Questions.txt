@@ -1,0 +1,747 @@
+PRACTICAL 3: EXPERIMENT WITH REGULARIZATION TECHNIQUES VIVA QUESTIONS
+AND ANSWERS
+
+Based on the uploaded Practical3.ipynb notebook Dataset: MNIST
+handwritten digit dataset Framework: TensorFlow / Keras
+
+============================================================ SECTION 1:
+AIM AND BASIC CONCEPTS
+============================================================
+
+Q1. What is the aim of this practical? Answer: The aim is to experiment
+with regularization techniques by training a neural network without
+regularization, with L2 regularization, and with L2 regularization
+combined with Dropout. Their performance is evaluated and compared, and
+training/validation metrics are visualized.
+
+Q2. What is regularization in machine learning? Answer: Regularization
+is a set of techniques used to reduce overfitting by discouraging a
+model from becoming unnecessarily complex. It helps a model generalize
+better to unseen data.
+
+Q3. What is overfitting? Answer: Overfitting occurs when a model learns
+the training data too closely, including noise or accidental patterns.
+It performs well on training data but poorly on unseen or validation
+data.
+
+Q4. What is underfitting? Answer: Underfitting occurs when a model is
+too simple or insufficiently trained to learn the underlying patterns.
+It performs poorly on both training and validation data.
+
+Q5. What is generalization? Answer: Generalization is the ability of a
+trained model to make accurate predictions on new data that it did not
+see during training.
+
+Q6. Why do we need regularization? Answer: We use regularization to
+control model complexity, reduce overfitting, and improve performance on
+unseen data.
+
+Q7. Does regularization always increase accuracy? Answer:
+No. Regularization can sometimes reduce training accuracy because it
+restricts learning. Its purpose is to improve generalization, not
+necessarily to maximize training accuracy.
+
+Q8. What is the difference between training performance and validation
+performance? Answer: Training performance is measured on data used to
+update model weights. Validation performance is measured on a separate
+portion of data that is not used for weight updates and helps monitor
+generalization during training.
+
+============================================================ SECTION 2:
+DATASET AND PREPROCESSING
+============================================================
+
+Q9. Which dataset is used in this practical? Answer: The MNIST
+handwritten digit dataset.
+
+Q10. What is MNIST? Answer: MNIST is a standard dataset of handwritten
+digits from 0 to 9. It contains 28 x 28 grayscale images and their
+corresponding digit labels.
+
+Q11. What is the shape of each MNIST image? Answer: Each image has a
+height of 28 pixels and a width of 28 pixels, so its shape is 28 x 28.
+
+Q12. How many classes are present in MNIST? Answer: There are 10
+classes, representing digits 0 through 9.
+
+Q13. What does mnist.load_data() return? Answer: It returns two pairs:
+(X_train, y_train) for training and (X_test, y_test) for testing.
+
+Q14. What are X_train and y_train? Answer: X_train contains training
+images, while y_train contains the correct digit labels for those
+images.
+
+Q15. What are X_test and y_test? Answer: X_test contains test images,
+and y_test contains their correct digit labels. They are used to
+evaluate the trained model on unseen data.
+
+Q16. Why do we divide image values by 255.0? Answer: An 8-bit grayscale
+pixel ranges from 0 to 255. Dividing by 255 scales pixel values to the
+range 0 to 1, which usually makes neural-network training more stable
+and convenient.
+
+Q17. What is normalization? Answer: Normalization is the process of
+scaling input values to a common range or scale. In this practical,
+pixel values are scaled from 0–255 to 0–1.
+
+Q18. What does X_train.shape show? Answer: It shows the dimensions of
+the training image array, including the number of images and the 28 x 28
+dimensions of each image.
+
+Q19. Why is the test set not used during model.fit()? Answer: The test
+set should remain separate until final evaluation. Using it repeatedly
+during training or model selection can lead to biased evaluation.
+
+Q20. What is validation_split=0.2? Answer: It reserves 20% of the
+supplied training data for validation. The remaining 80% is used to
+update the model weights.
+
+============================================================ SECTION 3:
+MODEL ARCHITECTURE
+============================================================
+
+Q21. Which deep-learning framework is used? Answer: TensorFlow, using
+its Keras API.
+
+Q22. What is Keras? Answer: Keras is a high-level deep-learning API that
+makes it easier to build, train, and evaluate neural networks.
+
+Q23. What is a Sequential model? Answer: A Sequential model is a linear
+stack of layers. Each layer passes its output to the next layer.
+
+Q24. What is a Dense layer? Answer: A Dense layer is a fully connected
+neural-network layer in which each neuron receives input from every
+output in the previous layer.
+
+Q25. What is Flatten? Answer: Flatten converts a multidimensional input
+into a one-dimensional vector. Here it converts a 28 x 28 image into a
+vector of 784 values.
+
+Q26. Why is Flatten used in this practical? Answer: The Dense layers
+expect a one-dimensional feature vector per example. Flatten converts
+each 28 x 28 image into 784 input values.
+
+Q27. How many neurons are in the first hidden Dense layer? Answer: 128
+neurons.
+
+Q28. How many neurons are in the second hidden Dense layer? Answer: 64
+neurons.
+
+Q29. What is an activation function? Answer: An activation function
+transforms a neuron’s weighted input and helps a neural network learn
+nonlinear relationships.
+
+Q30. Which activation function is used in the hidden layers? Answer:
+ReLU.
+
+Q31. What is ReLU? Answer: ReLU stands for Rectified Linear Unit. It
+returns max(0, x): negative inputs become zero and positive inputs
+remain unchanged.
+
+Q32. Why is ReLU commonly used in hidden layers? Answer: It is
+computationally simple and introduces nonlinearity, helping neural
+networks learn complex patterns.
+
+Q33. Which activation function is used in the output layer? Answer:
+Softmax.
+
+Q34. Why is Softmax used in the output layer? Answer: This is a 10-class
+classification problem. Softmax converts output scores into class
+probabilities that sum to approximately 1.
+
+Q35. Why does the output layer contain 10 neurons? Answer: There are 10
+possible digit classes, from 0 to 9, so one output neuron represents
+each class.
+
+Q36. What does the model predict? Answer: It predicts the probability of
+the input image belonging to each digit class. The class with the
+highest probability is the predicted digit.
+
+============================================================ SECTION 4:
+MODEL COMPILATION AND TRAINING
+============================================================
+
+Q37. What does model.compile() do? Answer: It configures the model for
+training by specifying the optimizer, loss function, and evaluation
+metrics.
+
+Q38. Which optimizer is used? Answer: Adam.
+
+Q39. What is an optimizer? Answer: An optimizer updates the model’s
+trainable weights to reduce the loss function during training.
+
+Q40. What is Adam? Answer: Adam stands for Adaptive Moment Estimation.
+It is an optimization algorithm that adapts learning rates for model
+parameters using estimates of first and second moments of gradients.
+
+Q41. Which loss function is used? Answer:
+sparse_categorical_crossentropy.
+
+Q42. Why is sparse_categorical_crossentropy used? Answer: The task has
+multiple mutually exclusive classes, and the labels are integer class
+IDs (0 to 9), rather than one-hot encoded vectors. This makes sparse
+categorical cross-entropy appropriate.
+
+Q43. What is categorical cross-entropy? Answer: It measures the
+difference between the true class distribution and the predicted class
+probabilities. It is commonly used for multi-class classification with
+one-hot encoded labels.
+
+Q44. What is the difference between categorical and sparse categorical
+cross-entropy? Answer: Categorical cross-entropy expects labels in
+one-hot encoded form. Sparse categorical cross-entropy expects integer
+class labels.
+
+Q45. What does metrics=[‘accuracy’] mean? Answer: It tells Keras to
+report classification accuracy during training, validation, and
+evaluation.
+
+Q46. What is an epoch? Answer: One epoch means the model has processed
+every example in the training portion once.
+
+Q47. How many epochs are used in this practical? Answer: 15 epochs for
+each of the three models.
+
+Q48. What is batch_size=128? Answer: The model processes 128 training
+examples in each batch before performing a weight update.
+
+Q49. What is the difference between an epoch and a batch? Answer: An
+epoch is one complete pass through the training data. A batch is a
+smaller group of examples processed in one training step.
+
+Q50. What does model.fit() do? Answer: It trains the model using the
+supplied training data and labels, for the specified number of epochs
+and batch size.
+
+Q51. What does verbose=1 mean? Answer: It displays a progress bar and
+training information for each epoch.
+
+Q52. What is the history object returned by model.fit()? Answer: It
+stores the training history, including metrics such as loss, accuracy,
+validation loss, and validation accuracy for each epoch.
+
+Q53. Why are history1, history2, and history3 stored separately? Answer:
+Each variable stores the training history of a different model, allowing
+their learning curves to be compared.
+
+============================================================ SECTION 5:
+L2 REGULARIZATION
+============================================================
+
+Q54. What is L2 regularization? Answer: L2 regularization adds a penalty
+based on the squared values of model weights to the original loss
+function. It discourages excessively large weights.
+
+Q55. What is the formula for L2 regularization? Answer: A common form
+is: Total Loss = Original Loss + lambda * sum(w_i^2) Here, w_i
+represents model weights and lambda controls the regularization
+strength. Framework implementations may use a scaling convention for the
+penalty.
+
+Q56. Which L2 value is used in this practical? Answer: The code uses
+l2(0.001), so the regularization coefficient is 0.001.
+
+Q57. What does l2(0.001) mean in Keras? Answer: It creates an L2
+regularizer with a coefficient of 0.001. The regularization penalty is
+added to the training objective for the layer’s kernel weights.
+
+Q58. Where is L2 regularization applied in model2? Answer: It is applied
+to the kernel weights of the two hidden Dense layers with 128 and 64
+neurons.
+
+Q59. Is L2 applied to the output Dense layer in model2? Answer: No. The
+output Dense layer does not specify kernel_regularizer in the notebook.
+
+Q60. What is a weight in a neural network? Answer: A weight is a
+learnable numerical parameter that controls the strength of the
+connection between neurons.
+
+Q61. Why does L2 discourage large weights? Answer: Squaring the weights
+makes large weight values contribute a larger penalty. The optimizer is
+therefore encouraged to keep weights smaller, all else being equal.
+
+Q62. What is lambda in L2 regularization? Answer: Lambda is the
+regularization-strength coefficient. A larger value generally applies a
+stronger penalty, while a smaller value applies a weaker penalty.
+
+Q63. What happens if the L2 coefficient is too high? Answer: The model
+may be overly constrained and may underfit, resulting in poor training
+and validation performance.
+
+Q64. What happens if the L2 coefficient is too low? Answer: The penalty
+may be too weak to meaningfully reduce overfitting.
+
+Q65. Does L2 force weights to become exactly zero? Answer: Usually no.
+L2 tends to shrink weights toward zero, but unlike L1 regularization it
+does not generally produce sparse weights with many exact zeros.
+
+Q66. What is weight decay? Answer: Weight decay refers to shrinking
+model weights during optimization. It is closely related to L2
+regularization, although implementation details can make the two
+different for adaptive optimizers such as Adam.
+
+============================================================ SECTION 6:
+DROPOUT ============================================================
+
+Q67. What is Dropout? Answer: Dropout is a regularization technique that
+randomly sets a fraction of layer outputs to zero during training. This
+reduces reliance on particular neurons and can help reduce overfitting.
+
+Q68. Which Dropout rates are used in this practical? Answer: The
+notebook uses Dropout(0.5) after the 128-neuron Dense layer and
+Dropout(0.3) after the 64-neuron Dense layer.
+
+Q69. What does Dropout(0.5) mean? Answer: During training, approximately
+50% of the outputs entering that Dropout layer are randomly set to zero
+for each training step.
+
+Q70. What does Dropout(0.3) mean? Answer: During training, approximately
+30% of the outputs entering that Dropout layer are randomly set to zero.
+
+Q71. Does Dropout permanently remove neurons? Answer: No. Dropout does
+not permanently delete neurons or weights. It temporarily masks
+activations during training. At inference time, Dropout is inactive and
+the full network is used with the appropriate scaling handled by Keras.
+
+Q72. Is Dropout active during testing? Answer: No. In normal Keras
+evaluation and inference, Dropout is inactive.
+
+Q73. Why is Dropout used? Answer: It reduces co-adaptation between
+neurons and encourages the network to learn more robust features, which
+can reduce overfitting.
+
+Q74. What happens if the Dropout rate is too high? Answer: Too much
+information may be removed during training, making learning difficult
+and causing underfitting.
+
+Q75. What happens if the Dropout rate is zero? Answer: No outputs are
+dropped, so the Dropout layer has no regularization effect.
+
+Q76. What is the difference between L2 and Dropout? Answer: L2 adds a
+penalty for large weights to the loss function. Dropout randomly masks
+layer activations during training. Both aim to reduce overfitting but
+work differently.
+
+============================================================ SECTION 7:
+UNDERSTANDING THE THREE NOTEBOOK MODELS
+============================================================
+
+Q77. How many models are trained in the notebook? Answer: Three models.
+
+Q78. Explain model1. Answer: Model1 is the baseline model. It contains
+Flatten, Dense(128, ReLU), Dense(64, ReLU), and Dense(10, Softmax),
+without L2 regularization or Dropout.
+
+Q79. Explain model2. Answer: Model2 has the same basic architecture as
+model1, but L2 regularization with coefficient 0.001 is applied to both
+hidden Dense layers.
+
+Q80. Explain model3. Answer: Model3 applies L2 regularization with
+coefficient 0.001 to both hidden Dense layers and adds Dropout rates of
+0.5 and 0.3 after those layers.
+
+Q81. Does model3 test Dropout alone? Answer: No. Model3 combines L2
+regularization and Dropout. Therefore, the current notebook does not
+isolate the effect of Dropout by itself.
+
+Q82. How could you compare Dropout alone? Answer: Create another model
+with the same architecture but add Dropout layers without specifying
+kernel_regularizer=l2(…). Train and evaluate it under the same
+conditions.
+
+Q83. Why should the models use the same architecture and training
+settings for comparison? Answer: Keeping other factors the same makes it
+easier to attribute performance differences to the regularization
+technique rather than changes in model size, epochs, batch size, or
+optimizer.
+
+Q84. Are the models initialized with exactly the same weights? Answer:
+No. Each model is created and trained separately, so their initial
+weights are generally different unless explicit seeds and controlled
+initialization are used.
+
+Q85. Why can results vary between runs? Answer: Neural-network
+initialization, data shuffling, and Dropout randomness can affect
+training. Results can vary unless random seeds and other sources of
+nondeterminism are controlled.
+
+============================================================ SECTION 8:
+EVALUATION AND COMPARISON
+============================================================
+
+Q86. What does model.evaluate() do? Answer: It evaluates a trained model
+on the supplied data and returns the configured loss and metric values.
+
+Q87. Which data is used for final evaluation? Answer: The notebook uses
+X_test and y_test, the held-out MNIST test set.
+
+Q88. What does loss1, acc1 = model1.evaluate(…) mean? Answer: It stores
+the test loss in loss1 and the test accuracy in acc1 for model1. The
+same approach is used for model2 and model3.
+
+Q89. What is accuracy? Answer: Accuracy is the fraction of predictions
+that are correct. It is calculated as correct predictions divided by
+total predictions.
+
+Q90. What is loss? Answer: Loss is a numerical measure of how far the
+model’s predictions are from the target labels according to the selected
+loss function. Lower loss is generally better for the same evaluation
+setup.
+
+Q91. Is higher accuracy always enough to choose a model? Answer: No. We
+should also consider validation/test loss, the gap between training and
+validation performance, stability, and the practical cost of the model.
+
+Q92. How can we identify overfitting from learning curves? Answer: A
+common sign is training loss continuing to decrease while validation
+loss stops decreasing or starts increasing. Training accuracy may
+continue increasing while validation accuracy stops improving.
+
+Q93. What does it mean if training and validation accuracy are both low?
+Answer: It may indicate underfitting, insufficient training, poor model
+capacity, or problems with the data or training setup.
+
+Q94. What does it mean if training accuracy is high but validation
+accuracy is much lower? Answer: It suggests the model may be overfitting
+the training data.
+
+Q95. What should we expect regularization to do to training accuracy?
+Answer: It may lower training accuracy because the model is constrained
+or randomly drops activations during training. That is not necessarily a
+problem if validation or test performance improves.
+
+============================================================ SECTION 9:
+VISUALIZATION AND MATPLOTLIB
+============================================================
+
+Q96. Which library is used for plotting? Answer: Matplotlib, imported as
+plt.
+
+Q97. What does plt.figure(figsize=(12,5)) do? Answer: It creates a new
+figure with a width of 12 inches and a height of 5 inches.
+
+Q98. What does plt.subplot(1,2,1) mean? Answer: It divides the figure
+into 1 row and 2 columns and selects the first plotting area.
+
+Q99. What does plt.subplot(1,2,2) mean? Answer: It selects the second
+plotting area in the same 1-row, 2-column layout.
+
+Q100. What does plt.plot() do? Answer: It draws a line graph using the
+supplied data.
+
+Q101. What does history1.history[‘accuracy’] contain? Answer: It
+contains model1’s training accuracy recorded at the end of each epoch.
+
+Q102. What does history1.history[‘val_accuracy’] contain? Answer: It
+contains model1’s validation accuracy recorded at the end of each epoch.
+
+Q103. What does history1.history[‘loss’] contain? Answer: It contains
+model1’s training loss recorded at the end of each epoch.
+
+Q104. What does history1.history[‘val_loss’] contain? Answer: It
+contains model1’s validation loss recorded at the end of each epoch.
+
+Q105. What does label=‘No Reg’ do? Answer: It assigns a label to the
+plotted line so that it can be identified in the legend.
+
+Q106. What does plt.title() do? Answer: It adds a title to the current
+plot.
+
+Q107. What does plt.xlabel() do? Answer: It labels the horizontal axis.
+
+Q108. What does plt.ylabel() do? Answer: It labels the vertical axis.
+
+Q109. What does plt.legend() do? Answer: It displays the labels of
+plotted lines.
+
+Q110. What does plt.show() do? Answer: It displays the completed figure.
+
+Q111. Why should we plot training and validation loss as well as
+accuracy? Answer: Accuracy shows the fraction of correct
+classifications, while loss shows the quality of predicted probabilities
+according to the loss function. Both help diagnose learning and
+overfitting.
+
+Q112. Which four graphs are useful for this practical? Answer: Training
+accuracy, validation accuracy, training loss, and validation loss, each
+comparing the three models.
+
+============================================================ SECTION 10:
+PYTHON AND KERAS CODE QUESTIONS
+============================================================
+
+Q113. What is import tensorflow as tf used for? Answer: It imports the
+TensorFlow library and gives it the short alias tf.
+
+Q114. Why are Sequential, Dense, Dropout, and Flatten imported? Answer:
+They are Keras classes used to construct the neural-network architecture
+and its layers.
+
+Q115. Why is l2 imported? Answer: It provides the L2 regularizer used in
+the hidden Dense layers of model2 and model3.
+
+Q116. Why is mnist imported? Answer: It provides access to the built-in
+MNIST dataset.
+
+Q117. What does activation=‘relu’ specify? Answer: It specifies that the
+ReLU activation function is applied to the output of that Dense layer.
+
+Q118. What does activation=‘softmax’ specify? Answer: It specifies that
+the output layer converts its scores into a probability distribution
+across the 10 digit classes.
+
+Q119. What does optimizer=‘adam’ specify? Answer: It tells Keras to use
+the Adam optimization algorithm when updating model parameters.
+
+Q120. What is the purpose of verbose=0 in model.evaluate()? Answer: It
+suppresses the progress display while evaluation runs.
+
+Q121. Why is print() used in the evaluation cell? Answer: It displays
+each model’s test loss and accuracy in a readable format.
+
+Q122. What does “{:<25}” mean in the formatted comparison table? Answer:
+It left-aligns a value in a field that is 25 characters wide.
+
+Q123. What does “{:<12.4f}” mean? Answer: It left-aligns a
+floating-point value in a 12-character field and displays four digits
+after the decimal point.
+
+Q124. What does “=”*55 do? Answer: It repeats the equals sign 55 times
+to create a separator line.
+
+============================================================ SECTION 11:
+IMPORTANT DIFFERENCES
+============================================================
+
+Q125. Difference between L1 and L2 regularization? Answer: L1 adds a
+penalty based on the sum of absolute weight values and can encourage
+sparse weights. L2 adds a penalty based on the sum of squared weights
+and tends to shrink weights toward zero.
+
+Q126. Difference between Dropout and data augmentation? Answer: Dropout
+randomly masks activations inside the network during training. Data
+augmentation creates modified training examples, such as rotated or
+shifted images, to increase input diversity.
+
+Q127. Difference between validation data and test data? Answer:
+Validation data is used during model development to monitor performance
+and guide choices. Test data is held back for final evaluation.
+
+Q128. Difference between parameters and hyperparameters? Answer:
+Parameters are learned from data, such as weights and biases.
+Hyperparameters are settings chosen before or during model development,
+such as epochs, batch size, L2 coefficient, and Dropout rate.
+
+Q129. Difference between classification and regression? Answer:
+Classification predicts a category or class, such as a digit from 0 to
+9. Regression predicts a continuous numerical value.
+
+Q130. Is MNIST a classification or regression problem? Answer: It is a
+multi-class classification problem because the model predicts one of ten
+digit categories.
+
+============================================================ SECTION 12:
+POSSIBLE PRACTICAL / CODE MODIFICATION QUESTIONS
+============================================================
+
+Q131. How would you add Dropout to a Dense neural network? Answer:
+Import Dropout from tensorflow.keras.layers and insert a layer such as
+Dropout(0.5) after a hidden Dense layer.
+
+Q132. How would you apply L2 regularization to a Dense layer? Answer:
+Add kernel_regularizer=l2(0.001) to the Dense layer.
+
+Q133. How would you change the L2 strength? Answer: Change the
+coefficient passed to l2(), for example l2(0.01) for a stronger penalty
+than l2(0.001), all else equal.
+
+Q134. How would you change the Dropout rate? Answer: Change the argument
+passed to Dropout(), for example Dropout(0.2) or Dropout(0.4).
+
+Q135. How would you add a Dropout-only comparison model? Answer: Copy
+the baseline architecture, insert Dropout layers after hidden Dense
+layers, and do not add kernel_regularizer. Train it and store its
+history separately.
+
+Q136. How would you plot training loss? Answer: Use
+plt.plot(history1.history[‘loss’]) and repeat for the other models, with
+suitable labels.
+
+Q137. How would you plot validation loss? Answer: Use
+plt.plot(history1.history[‘val_loss’]) and repeat for the other models.
+
+Q138. What happens if epochs are increased? Answer: The model gets more
+opportunities to learn from the training data. More epochs may improve
+performance, but too many can also increase overfitting.
+
+Q139. What happens if batch size is decreased? Answer: Each update uses
+fewer examples. This can make updates noisier and increases the number
+of updates per epoch.
+
+Q140. What happens if the number of hidden neurons is increased? Answer:
+Model capacity increases, which may help learn more complex patterns but
+can also increase computation and the risk of overfitting.
+
+Q141. Why should the final output layer use 10 neurons rather than 1?
+Answer: The task has ten possible digit classes, so the model needs one
+output score for each class.
+
+Q142. Why is the output activation Softmax rather than ReLU? Answer:
+Softmax produces normalized class probabilities suitable for multi-class
+classification. ReLU does not produce a probability distribution.
+
+============================================================ SECTION 13:
+QUESTIONS ABOUT THE NOTEBOOK’S LIMITATIONS
+============================================================
+
+Q143. Does the current notebook compare Dropout alone against no
+regularization? Answer: No. It compares the baseline, L2 alone, and L2
+combined with Dropout. A separate Dropout-only model is needed to
+isolate Dropout’s effect.
+
+Q144. Does the current notebook plot training and validation loss?
+Answer: The original plotting cell plots only training and validation
+accuracy. To satisfy the full visualization requirement, add plots for
+history1.history[‘loss’], history2.history[‘loss’],
+history3.history[‘loss’] and the corresponding val_loss values.
+
+Q145. Does the current notebook use the test set for training? Answer:
+No. The models are trained using X_train and y_train. The test set is
+used for evaluation.
+
+Q146. Is validation_split=0.2 applied to the test data? Answer: No. It
+is applied to the data passed to model.fit(), which in this notebook is
+the training data.
+
+Q147. Are the L2 penalties included in the training objective? Answer:
+Yes. Keras adds the layer regularization losses to the model’s training
+loss.
+
+Q148. Can the displayed training loss be directly compared with test
+loss? Answer: Interpret the values carefully. Training loss for
+regularized models includes regularization penalties, whereas evaluation
+loss may not include the same training-only regularization contribution
+in the same way. Compare metrics using consistent evaluation conditions
+and understand what each loss represents.
+
+Q149. What is one improvement to make the experiment more complete?
+Answer: Add a Dropout-only model so that the separate effect of Dropout
+can be compared with L2 and with the baseline.
+
+Q150. What is another improvement to make the comparison fairer? Answer:
+Use controlled random seeds, identical data splits and training
+settings, and ideally repeat runs to account for randomness.
+
+============================================================ SECTION 14:
+QUICK REVISION - ONE-LINE ANSWERS
+============================================================
+
+Q151. Full form of MNIST? Answer: Modified National Institute of
+Standards and Technology.
+
+Q152. Image size in MNIST? Answer: 28 x 28 pixels.
+
+Q153. Number of output classes? Answer: 10.
+
+Q154. Number of hidden Dense layers? Answer: 2.
+
+Q155. Neurons in hidden layers? Answer: 128 and 64.
+
+Q156. Hidden-layer activation? Answer: ReLU.
+
+Q157. Output activation? Answer: Softmax.
+
+Q158. Optimizer? Answer: Adam.
+
+Q159. Loss function? Answer: Sparse categorical cross-entropy.
+
+Q160. Epochs? Answer: 15.
+
+Q161. Batch size? Answer: 128.
+
+Q162. Validation split? Answer: 0.2, or 20%.
+
+Q163. L2 coefficient? Answer: 0.001.
+
+Q164. First Dropout rate? Answer: 0.5, or 50%.
+
+Q165. Second Dropout rate? Answer: 0.3, or 30%.
+
+Q166. Number of models in the notebook? Answer: 3.
+
+Q167. Baseline model? Answer: Model1, without regularization.
+
+Q168. L2 model? Answer: Model2.
+
+Q169. Combined regularization model? Answer: Model3, using L2 and
+Dropout.
+
+Q170. Plotting library? Answer: Matplotlib.
+
+Q171. What does accuracy measure? Answer: The fraction of correct
+predictions.
+
+Q172. What does loss measure? Answer: The model’s prediction error
+according to the selected loss function.
+
+Q173. Main purpose of regularization? Answer: To reduce overfitting and
+improve generalization.
+
+Q174. Does Dropout operate during inference? Answer: No, it is inactive
+during inference.
+
+Q175. Does L2 usually make weights exactly zero? Answer: No, it
+generally shrinks weights toward zero.
+
+============================================================ SECTION 15:
+SAMPLE EXPLANATION OF THE PRACTICAL
+============================================================
+
+Q176. Explain the complete practical in your own words. Answer: In this
+practical, I used the MNIST dataset, which contains 28 x 28 grayscale
+images of handwritten digits from 0 to 9. First, I normalized the pixel
+values by dividing them by 255. Then I built a baseline Sequential
+neural network with a Flatten layer, two hidden Dense layers containing
+128 and 64 neurons with ReLU activation, and an output layer containing
+10 neurons with Softmax activation.
+
+I trained the first model without regularization. Then I trained a
+second model by applying L2 regularization with a coefficient of 0.001
+to both hidden Dense layers. For the third model, I used L2
+regularization along with Dropout rates of 0.5 and 0.3.
+
+All three models were compiled using the Adam optimizer and sparse
+categorical cross-entropy loss. Each model was trained for 15 epochs
+with a batch size of 128 and a validation split of 20%. Finally, I
+evaluated the models on the test dataset, compared their loss and
+accuracy, and plotted their training and validation accuracy. To
+complete the visualization requirement, I also plotted training and
+validation loss.
+
+Q177. What conclusion can you give for this practical? Answer:
+Regularization techniques help control overfitting by restricting model
+weights or randomly masking activations during training. The best model
+should be selected based on validation and test performance, not
+training accuracy alone. The actual conclusion about which model
+performed best must be based on the numerical results obtained when the
+notebook is executed.
+
+Q178. Which model is expected to perform best? Answer: There is no
+guaranteed winner. The result depends on the data, initialization,
+training process, and regularization strength. We should compare
+validation and test metrics to determine which model generalizes best.
+
+============================================================ END OF VIVA
+QUESTION BANK
+============================================================
+
+STUDY TIP: First prepare Questions 1-8, 16-20, 21-36, 37-53, 54-76,
+77-95, and 143-150. These cover the aim, dataset, architecture,
+training, regularization, evaluation, and limitations of the actual
+notebook.
+
+Important note: This question bank is extensive, but no finite list can
+contain every question an examiner might ask. Answers are based on the
+uploaded notebook and standard explanations of the concepts used in it.
+Where the notebook does not provide actual metric values, no model
+winner or numerical result is assumed.

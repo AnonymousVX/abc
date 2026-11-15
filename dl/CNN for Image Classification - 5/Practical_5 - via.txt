@@ -1,0 +1,652 @@
+DEEP LEARNING PRACTICAL 4
+BUILD A CNN FOR IMAGE CLASSIFICATION USING PYTORCH AND MNIST
+VIVA QUESTIONS, THEORY AND ANSWERS
+
+============================================================
+SECTION 1: PRACTICAL OVERVIEW
+============================================================
+
+1. What is the aim of this practical?
+Ans: To build a Convolutional Neural Network (CNN) for image classification using the MNIST dataset, apply basic data augmentation, and compare CNN performance with a Multi-Layer Perceptron (MLP).
+
+2. Which framework is used?
+Ans: PyTorch.
+
+3. Which dataset is used?
+Ans: MNIST, a handwritten digit image dataset.
+
+4. What does MNIST stand for?
+Ans: Modified National Institute of Standards and Technology.
+
+5. How many images are present in MNIST?
+Ans: 60,000 training images and 10,000 testing images.
+
+6. What is the size of each MNIST image?
+Ans: 28 × 28 pixels.
+
+7. How many classes are present?
+Ans: 10 classes, representing digits 0 to 9.
+
+8. Is MNIST a supervised or unsupervised dataset?
+Ans: It is a supervised dataset because each image has a corresponding digit label.
+
+9. What is the input shape of one MNIST image in PyTorch?
+Ans: (1, 28, 28), representing one grayscale channel, height 28 and width 28.
+
+10. Why does MNIST have one input channel?
+Ans: MNIST images are grayscale, so each pixel has one intensity value. RGB images have three channels.
+
+11. What is image classification?
+Ans: Image classification is the task of assigning an image to one class from a predefined set of classes.
+
+12. What is the expected output of this practical?
+Ans: The trained models predict a digit from 0 to 9. The practical also displays training-loss and test-accuracy comparison plots for CNN and MLP.
+
+============================================================
+SECTION 2: ARTIFICIAL NEURAL NETWORK AND CNN THEORY
+============================================================
+
+13. What is an Artificial Neural Network (ANN)?
+Ans: An ANN is a computational model inspired by the human brain. It consists of interconnected artificial neurons arranged in layers.
+
+14. What is a neural network layer?
+Ans: A layer is a group of neurons that processes input data and passes its output to the next layer.
+
+15. What is a CNN?
+Ans: A Convolutional Neural Network is a deep learning model mainly used for image data. It learns spatial features such as edges, shapes and patterns using convolution filters.
+
+16. Why are CNNs preferred for image classification?
+Ans: CNNs automatically learn image features, preserve spatial relationships and use shared filter weights, reducing the number of parameters compared with a fully connected network on raw pixels.
+
+17. What are the main layers in a CNN?
+Ans:
+- Convolutional layer
+- Activation layer, commonly ReLU
+- Pooling layer
+- Flatten layer
+- Fully connected layer
+- Output layer
+
+18. What is a convolutional layer?
+Ans: It applies learnable filters (kernels) to an input image or feature map to extract features.
+
+19. What is a filter or kernel?
+Ans: A filter is a small matrix of learnable weights that moves over the input and produces a feature map.
+
+20. What is a feature map?
+Ans: A feature map is the output produced when a filter is applied to an input using convolution.
+
+21. What features can CNN filters learn?
+Ans: Early layers often learn simple features such as edges and corners. Deeper layers can learn more complex patterns and shapes.
+
+22. What is stride?
+Ans: Stride is the number of pixels by which a filter moves at each step. A stride of 1 moves one pixel at a time.
+
+23. What is padding?
+Ans: Padding adds extra pixels, usually zeros, around the input boundary. It can help preserve spatial dimensions.
+
+24. What does padding=1 mean in this practical?
+Ans: It adds one pixel of zero padding around the input feature map.
+
+25. What is the purpose of Max Pooling?
+Ans: Max Pooling reduces the spatial size of feature maps by selecting the maximum value from each pooling region. It reduces computation and helps retain strong features.
+
+26. What is the difference between convolution and pooling?
+Ans: Convolution uses learnable filters to extract features. Pooling downsamples feature maps using a fixed operation such as maximum selection.
+
+27. What is ReLU?
+Ans: ReLU stands for Rectified Linear Unit. It returns the input if it is positive; otherwise, it returns zero. Formula: f(x) = max(0, x).
+
+28. Why is ReLU used?
+Ans: It introduces non-linearity and is computationally simple. It can also help reduce the vanishing-gradient problem compared with sigmoid in many settings.
+
+29. What is the Flatten layer?
+Ans: Flatten converts multi-dimensional feature maps into a one-dimensional vector so they can be passed to fully connected layers.
+
+30. What is a fully connected layer?
+Ans: A fully connected layer connects each neuron to all outputs from the previous layer and learns combinations of extracted features.
+
+31. What is the output layer in this CNN?
+Ans: The final fully connected layer has 10 output units, one for each digit class.
+
+32. Why are there 10 output neurons?
+Ans: MNIST has 10 possible classes, digits 0 through 9.
+
+33. Does the model need a Softmax layer in the code?
+Ans: No. The code uses CrossEntropyLoss, which combines log-softmax and negative log-likelihood internally. The model should return raw logits.
+
+34. What are logits?
+Ans: Logits are the raw, unnormalized scores produced by the final layer before converting them into probabilities.
+
+35. What is the difference between feature extraction and classification?
+Ans: Feature extraction learns useful patterns from the image, mainly through convolutional layers. Classification uses those features to predict the image's class.
+
+============================================================
+SECTION 3: CNN ARCHITECTURE USED IN THE PRACTICAL
+============================================================
+
+36. How many convolutional layers are used?
+Ans: Two convolutional layers.
+
+37. Explain the first convolutional layer.
+Ans: Conv2d(1, 16, kernel_size=3, padding=1) takes one input channel and produces 16 feature maps using 3 × 3 filters.
+
+38. Explain the second convolutional layer.
+Ans: Conv2d(16, 32, kernel_size=3, padding=1) takes 16 input feature maps and produces 32 output feature maps.
+
+39. What is the purpose of the first MaxPool2d(2)?
+Ans: It reduces the feature-map height and width from 28 × 28 to 14 × 14.
+
+40. What is the size after the second pooling layer?
+Ans: It reduces 14 × 14 to 7 × 7.
+
+41. Why is the input size to the first fully connected layer 32 × 7 × 7?
+Ans: After the two convolution and pooling blocks, there are 32 feature maps, each of size 7 × 7. Flattening gives 32 × 7 × 7 = 1568 values.
+
+42. Why is Linear(32*7*7, 128) used?
+Ans: It maps the 1568 flattened features to 128 hidden neurons.
+
+43. Why is Linear(128, 10) used?
+Ans: It produces 10 class scores corresponding to digits 0 to 9.
+
+44. Explain the CNN forward pass.
+Ans: The image passes through convolution, ReLU and max-pooling layers twice. The feature maps are flattened and passed through fully connected layers to produce 10 class scores.
+
+45. What does nn.Sequential do?
+Ans: It creates a sequence of layers in which the output of one layer is passed as input to the next layer.
+
+46. What does nn.Module represent?
+Ans: It is the base class for creating neural network models in PyTorch.
+
+47. Why do we define __init__() in a model class?
+Ans: It initializes and defines the model's layers and components.
+
+48. What is the purpose of forward()?
+Ans: It defines how input data moves through the network to produce the output.
+
+============================================================
+SECTION 4: MLP AND CNN COMPARISON
+============================================================
+
+49. What is an MLP?
+Ans: A Multi-Layer Perceptron is a feedforward neural network made of fully connected layers with one or more hidden layers.
+
+50. How is an MLP different from a CNN?
+Ans: An MLP generally flattens an image into a vector and uses fully connected layers. A CNN uses convolution filters to learn spatial features before classification.
+
+51. Why is Flatten used at the beginning of the MLP?
+Ans: It converts a 1 × 28 × 28 image into a vector of 784 values.
+
+52. How many input features does the MLP receive?
+Ans: 784, because 28 × 28 = 784.
+
+53. Explain the MLP architecture used.
+Ans: Flatten, Linear(784,128), ReLU, Linear(128,64), ReLU and Linear(64,10).
+
+54. Why compare CNN and MLP?
+Ans: The comparison demonstrates how convolution-based feature extraction affects image-classification performance compared with a fully connected network.
+
+55. Which model is generally better for image classification, CNN or MLP?
+Ans: CNNs are generally more suitable because they learn spatial patterns and reuse filters across image locations. Actual performance depends on architecture, training and dataset.
+
+56. Why can an MLP lose spatial information?
+Ans: Flattening converts the image into a one-dimensional vector. The network does not explicitly preserve the two-dimensional neighbourhood structure as convolution does.
+
+============================================================
+SECTION 5: DATASET, PREPROCESSING AND AUGMENTATION
+============================================================
+
+57. What is data preprocessing?
+Ans: Data preprocessing prepares raw data for model training, for example by converting images to tensors and scaling pixel values.
+
+58. What is torchvision?
+Ans: torchvision is a PyTorch library that provides datasets, image transformations and tools for computer vision.
+
+59. What is transforms.Compose()?
+Ans: It combines multiple image transformations into a single sequence.
+
+60. What does transforms.ToTensor() do?
+Ans: It converts a PIL image or NumPy image into a PyTorch tensor and scales typical 8-bit image pixel values from 0–255 to 0–1.
+
+61. What is data augmentation?
+Ans: Data augmentation creates varied training examples by applying transformations to existing training images. It can improve generalization.
+
+62. Why is data augmentation used?
+Ans: It helps the model become less sensitive to small changes in image position or orientation and can reduce overfitting.
+
+63. Which augmentation techniques are used in this practical?
+Ans: RandomRotation(10) and RandomAffine(degrees=0, translate=(0.1, 0.1)).
+
+64. What does RandomRotation(10) do?
+Ans: It randomly rotates a training image by an angle within approximately -10 to +10 degrees.
+
+65. What does RandomAffine(degrees=0, translate=(0.1, 0.1)) do?
+Ans: It applies random horizontal and vertical translations of up to 10% of the image dimensions, without rotation from this transform.
+
+66. Why is augmentation applied only to the training dataset?
+Ans: Training augmentation helps the model learn robust features. Test data should remain consistent and unmodified so evaluation is fair and repeatable.
+
+67. Why is the test_transform only ToTensor()?
+Ans: The test images are converted to tensors without random changes, allowing consistent evaluation.
+
+68. What is overfitting?
+Ans: Overfitting occurs when a model performs very well on training data but poorly on unseen data because it has learned training-specific details.
+
+69. What is generalization?
+Ans: Generalization is the ability of a trained model to perform well on new, unseen data.
+
+============================================================
+SECTION 6: PYTORCH DATA LOADING
+============================================================
+
+70. What is torchvision.datasets.MNIST()?
+Ans: It is a built-in PyTorch dataset class that loads the MNIST dataset.
+
+71. What does root="./data" mean?
+Ans: It specifies the directory where the dataset is stored or downloaded.
+
+72. What does train=True mean?
+Ans: It loads the training split of MNIST.
+
+73. What does train=False mean?
+Ans: It loads the testing split of MNIST.
+
+74. What does download=True do?
+Ans: It downloads the dataset if it is not already available in the specified root directory.
+
+75. What is a DataLoader?
+Ans: DataLoader provides batches of data and supports shuffling and efficient data iteration.
+
+76. What is batch size?
+Ans: Batch size is the number of training examples processed together in one iteration.
+
+77. What batch size is used?
+Ans: 64.
+
+78. What does shuffle=True do?
+Ans: It randomly changes the order of training samples at the beginning of each epoch.
+
+79. Why is shuffle=False used for testing?
+Ans: Testing does not require random ordering. Keeping the order fixed makes evaluation predictable.
+
+80. What is an epoch?
+Ans: One epoch is one complete pass through the entire training dataset.
+
+81. How many epochs are used?
+Ans: Five epochs in the given practical code.
+
+============================================================
+SECTION 7: TRAINING, LOSS AND OPTIMIZATION
+============================================================
+
+82. What is a loss function?
+Ans: A loss function measures the difference between the model's predictions and the correct labels.
+
+83. Which loss function is used?
+Ans: CrossEntropyLoss.
+
+84. Why is CrossEntropyLoss used?
+Ans: It is commonly used for multi-class classification because it compares predicted class scores with the correct class labels.
+
+85. What is an optimizer?
+Ans: An optimizer updates model parameters to reduce the loss during training.
+
+86. Which optimizer is used?
+Ans: Adam optimizer.
+
+87. What is Adam?
+Ans: Adam stands for Adaptive Moment Estimation. It adapts parameter-wise learning rates using estimates of first and second moments of gradients.
+
+88. What is the learning rate?
+Ans: The learning rate controls the size of parameter updates during optimization.
+
+89. What learning rate is used?
+Ans: 0.001.
+
+90. What happens if the learning rate is too high?
+Ans: Training may become unstable, overshoot good solutions or fail to converge.
+
+91. What happens if the learning rate is too low?
+Ans: Training may be very slow and require more epochs.
+
+92. What is backpropagation?
+Ans: Backpropagation calculates gradients of the loss with respect to model parameters using the chain rule.
+
+93. What does loss.backward() do?
+Ans: It computes gradients for the model parameters.
+
+94. What does optimizer.step() do?
+Ans: It updates model parameters using the computed gradients.
+
+95. Why is optimizer.zero_grad() used?
+Ans: PyTorch accumulates gradients by default. zero_grad() clears old gradients before calculating gradients for the next batch.
+
+96. What is the purpose of model.train()?
+Ans: It sets the model to training mode. This matters for layers such as dropout and batch normalization.
+
+97. What is the purpose of model.eval()?
+Ans: It sets the model to evaluation mode, changing the behaviour of layers such as dropout and batch normalization.
+
+98. Why is torch.no_grad() used during testing?
+Ans: It disables gradient calculation, reducing memory usage and computation during evaluation.
+
+99. What does loss.item() return?
+Ans: It returns the loss as a standard Python number rather than a tensor.
+
+============================================================
+SECTION 8: ACCURACY AND EVALUATION
+============================================================
+
+100. What is accuracy?
+Ans: Accuracy is the percentage of correctly classified samples out of all evaluated samples.
+
+101. What is the formula for accuracy?
+Ans: Accuracy = (Number of correct predictions / Total predictions) × 100.
+
+102. What does torch.max(outputs, 1) do?
+Ans: It returns the maximum score and its index along dimension 1. The index is treated as the predicted class.
+
+103. What does labels.size(0) represent?
+Ans: It represents the number of labels, or samples, in the current batch.
+
+104. Why do we calculate test accuracy after each epoch?
+Ans: It helps monitor how well the model performs on unseen test data as training progresses.
+
+105. What is the difference between training loss and test accuracy?
+Ans: Training loss measures prediction error on training batches. Test accuracy measures the percentage of correct predictions on the test dataset.
+
+106. Can accuracy alone fully describe a model?
+Ans: No. Other metrics such as precision, recall, F1-score and a confusion matrix can provide additional information, especially for imbalanced datasets.
+
+107. What is a confusion matrix?
+Ans: A confusion matrix compares actual classes with predicted classes and shows correct and incorrect classifications for each class.
+
+108. What is validation data?
+Ans: Validation data is a separate dataset used during model development to tune settings and monitor generalization. In this practical, the code evaluates on the MNIST test split after each epoch; a separate validation split is not created.
+
+============================================================
+SECTION 9: PLOTS AND RESULT INTERPRETATION
+============================================================
+
+109. Why do we plot training loss?
+Ans: To observe whether the model's training error decreases over epochs.
+
+110. What does decreasing training loss indicate?
+Ans: It generally indicates that the model is fitting the training data better.
+
+111. Why do we plot test accuracy?
+Ans: To observe how classification performance changes on unseen test images during training.
+
+112. What does a higher test accuracy mean?
+Ans: A higher test accuracy means a larger percentage of test images are classified correctly.
+
+113. What does plt.figure() do?
+Ans: It creates a new figure for plotting.
+
+114. What does plt.plot() do?
+Ans: It draws a line graph using the supplied data.
+
+115. What do xlabel() and ylabel() do?
+Ans: They set the labels for the x-axis and y-axis.
+
+116. What does plt.legend() do?
+Ans: It displays labels for the plotted lines.
+
+117. What does plt.show() do?
+Ans: It displays the plot.
+
+118. How do you decide which model performed better?
+Ans: Compare their test accuracies and training behaviour. A higher test accuracy indicates better classification performance on this test set, but the comparison should also consider training time and consistency.
+
+119. Should CNN always achieve higher accuracy than MLP?
+Ans: No. CNNs are generally better suited to image structure, but the result depends on the model architecture, hyperparameters, training and dataset.
+
+============================================================
+SECTION 10: GPU, DEVICE AND PYTORCH BASICS
+============================================================
+
+120. What is CUDA?
+Ans: CUDA is NVIDIA's parallel computing platform that allows supported computations, including deep learning operations, to run on NVIDIA GPUs.
+
+121. What does torch.cuda.is_available() check?
+Ans: It checks whether CUDA is available for PyTorch.
+
+122. What does torch.device() do?
+Ans: It specifies the device, such as CPU or CUDA GPU, on which tensors and models should run.
+
+123. Why do we move images and labels to device?
+Ans: Model parameters and input tensors must be on the same device to perform computations.
+
+124. Why do we move the model to device?
+Ans: It places the model parameters on the selected CPU or GPU device.
+
+125. What is the difference between CPU and GPU training?
+Ans: CPUs are general-purpose processors. GPUs can perform many parallel operations and often accelerate deep learning workloads.
+
+============================================================
+SECTION 11: IMPORTANT DIFFERENCES
+============================================================
+
+126. CNN vs MLP
+Ans:
+CNN:
+- Uses convolutional filters.
+- Learns spatial features.
+- Preserves local image structure.
+- Commonly used for image processing.
+
+MLP:
+- Uses fully connected layers.
+- Usually receives flattened input.
+- Does not explicitly exploit local spatial structure.
+- Used for general tabular or vector data and simple classification tasks.
+
+127. Convolution vs Max Pooling
+Ans:
+Convolution:
+- Uses learnable filters.
+- Extracts features.
+- Produces feature maps.
+
+Max Pooling:
+- Uses a fixed maximum operation.
+- Reduces spatial dimensions.
+- Retains the strongest activation in each region.
+
+128. Training mode vs Evaluation mode
+Ans:
+Training mode:
+- Set using model.train().
+- Used while training the network.
+- Dropout and batch normalization behave in training mode.
+
+Evaluation mode:
+- Set using model.eval().
+- Used while evaluating or predicting.
+- Dropout and batch normalization behave in evaluation mode.
+
+129. Training data vs Testing data
+Ans:
+Training data:
+- Used to learn model parameters.
+- Used for backpropagation and optimization.
+
+Testing data:
+- Used to evaluate final performance on unseen examples.
+- Not used to update model parameters.
+
+130. Data augmentation vs Data preprocessing
+Ans:
+Data preprocessing prepares data for the model, such as converting images to tensors. Data augmentation creates varied training examples through transformations such as rotation and translation.
+
+============================================================
+SECTION 12: CODE-BASED VIVA QUESTIONS
+============================================================
+
+131. Why is import torch used?
+Ans: It imports the PyTorch library.
+
+132. Why is torch.nn imported?
+Ans: It provides neural-network layers, loss functions and model-building utilities.
+
+133. Why is torch.optim imported?
+Ans: It provides optimization algorithms such as SGD and Adam.
+
+134. Why is DataLoader imported?
+Ans: It loads the dataset in batches and supports shuffling.
+
+135. Why is matplotlib.pyplot imported?
+Ans: It is used to plot training loss and test accuracy.
+
+136. What is nn.Conv2d(1, 16, 3, padding=1)?
+Ans: A 2D convolution layer with 1 input channel, 16 output channels, a 3 × 3 kernel and padding of 1.
+
+137. What is nn.MaxPool2d(2)?
+Ans: A 2 × 2 max-pooling operation, which halves the height and width when the default stride is used.
+
+138. What is nn.Linear(784, 128)?
+Ans: A fully connected layer mapping 784 input features to 128 output features.
+
+139. Why is the final layer Linear(128, 10)?
+Ans: It generates 10 scores, one for each digit class.
+
+140. What does model.parameters() return?
+Ans: It provides the model's learnable parameters, which are passed to the optimizer.
+
+141. Why is the model called twice in the practical?
+Ans: The CNN and MLP are separate architectures, and each is trained independently for comparison.
+
+142. Why does train_model return train_losses and test_accuracies?
+Ans: These lists store the epoch-wise results so they can be printed or plotted after training.
+
+143. Why is the test set not shuffled?
+Ans: Shuffling is not necessary for evaluation because the final accuracy does not depend on sample order.
+
+144. What is the predicted class in the code?
+Ans: It is the index of the largest output logit among the 10 classes.
+
+============================================================
+SECTION 13: POSSIBLE EXAMINER QUESTIONS
+============================================================
+
+145. Why did you choose MNIST?
+Ans: MNIST is a standard, simple benchmark dataset containing labelled handwritten digits. It is suitable for demonstrating image classification.
+
+146. Why use CNN instead of only MLP?
+Ans: CNN can learn local spatial patterns using shared filters, which makes it suitable for image data.
+
+147. Why are there two convolutional layers?
+Ans: The first layer can learn basic visual features, while the second can combine them into more complex features.
+
+148. Why do we use two pooling layers?
+Ans: They progressively reduce feature-map dimensions and computational cost.
+
+149. Why use a 3 × 3 kernel?
+Ans: A 3 × 3 kernel is a common small filter that can learn local image patterns while keeping computation manageable.
+
+150. Why use 16 and 32 output channels?
+Ans: They specify the number of feature maps learned by the two convolutional layers. These are design choices that can be tuned.
+
+151. Why use 128 hidden neurons in the CNN classifier?
+Ans: The hidden layer learns combinations of extracted image features before producing the final class scores.
+
+152. Why use Adam instead of manually updating weights?
+Ans: Adam automatically updates parameters using gradients and adaptive learning-rate estimates.
+
+153. What happens if augmentation is too strong?
+Ans: Images may become unrealistic or their labels may no longer match the transformed content, which can reduce model performance.
+
+154. What happens if the model is trained for more epochs?
+Ans: It may improve initially, but excessive training can lead to overfitting. Performance should be monitored on separate evaluation data.
+
+155. How can you improve the CNN?
+Ans: Possible improvements include tuning learning rate, batch size, epochs, number of filters, adding dropout or batch normalization, and using a learning-rate scheduler.
+
+156. How can you reduce overfitting?
+Ans: Use data augmentation, dropout, weight decay, early stopping or more training data.
+
+157. What is the limitation of this practical?
+Ans: MNIST is a relatively simple grayscale digit dataset. Results on MNIST do not guarantee similar performance on complex real-world images.
+
+158. What is the final conclusion?
+Ans: CNNs are designed to learn spatial features from images and are generally effective for image classification. Comparing CNN with MLP demonstrates the benefit of convolution-based feature extraction on image data.
+
+============================================================
+SECTION 14: IMPORTANT FORMULAS AND QUICK REVISION
+============================================================
+
+1. ReLU:
+   f(x) = max(0, x)
+
+2. Accuracy:
+   Accuracy = (Correct Predictions / Total Predictions) × 100
+
+3. MNIST image dimensions:
+   28 × 28 = 784 pixels
+
+4. CNN feature-map dimensions in this practical:
+   Input: 1 × 28 × 28
+   After Conv1 + ReLU: 16 × 28 × 28
+   After MaxPool1: 16 × 14 × 14
+   After Conv2 + ReLU: 32 × 14 × 14
+   After MaxPool2: 32 × 7 × 7
+   After Flatten: 1568 features
+   Fully connected: 1568 → 128 → 10
+
+5. MLP dimensions:
+   Input: 784
+   Fully connected: 784 → 128 → 64 → 10
+
+6. Practical settings:
+   Framework: PyTorch
+   Dataset: MNIST
+   Training images: 60,000
+   Testing images: 10,000
+   Image size: 28 × 28
+   Classes: 10
+   Batch size: 64
+   Epochs: 5
+   Optimizer: Adam
+   Learning rate: 0.001
+   Loss: CrossEntropyLoss
+   Activation: ReLU
+   CNN convolution layers: 2
+   Pooling: MaxPool2d(2)
+   Augmentation: RandomRotation(10), RandomAffine translation 0.1
+
+============================================================
+LAST-MINUTE VIVA PRIORITY
+============================================================
+
+Prepare these first if you have limited time:
+
+1. What is CNN and why is it used?
+2. Explain all CNN layers.
+3. What is convolution and what is a filter?
+4. What is a feature map?
+5. What is Max Pooling and why is it used?
+6. What is ReLU?
+7. Explain the CNN architecture used in the practical.
+8. Why is the flattened size 32 × 7 × 7 = 1568?
+9. What is MLP? Differentiate CNN and MLP.
+10. What is MNIST? State its image size and number of samples.
+11. What is data augmentation and why is it used?
+12. Explain RandomRotation and RandomAffine.
+13. What is DataLoader and batch size?
+14. What is an epoch?
+15. What is CrossEntropyLoss?
+16. What is Adam optimizer?
+17. Explain backpropagation.
+18. What do zero_grad(), backward() and step() do?
+19. Difference between model.train() and model.eval().
+20. Why is torch.no_grad() used during testing?
+21. How is accuracy calculated?
+22. What does torch.max(outputs, 1) return?
+23. Why use CUDA/GPU?
+24. Why compare CNN and MLP?
+25. How do you interpret loss and accuracy graphs?
+
+NOTE:
+The code downloads MNIST automatically using torchvision.datasets.MNIST(download=True).
+The dataset is stored in the ./data folder. The first run requires internet access. Later runs can use the locally stored dataset.
+Actual accuracy and loss values depend on execution, random initialization, software and hardware. Do not memorize invented output values; quote the values produced by your own run.

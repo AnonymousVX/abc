@@ -1,0 +1,331 @@
+# Steps to Store and Load MNIST Dataset Offline
+
+**Step 1: Get the MNIST Dataset**
+
+Download or collect the MNIST dataset once from your college computer or another PC.
+
+Required four files:
+
+- train-images-idx3-ubyte
+- train-labels-idx1-ubyte
+- t10k-images-idx3-ubyte
+- t10k-labels-idx1-ubyte
+
+The files may also be available in `.gz` compressed format.
+
+**Step 2: Create a Folder Structure**
+
+Create the following folders on your laptop:
+
+```text
+DL_Practical/
+│
+├── Practical4.py
+│
+└── MNIST/
+    └── raw/
+        ├── train-images-idx3-ubyte
+        ├── train-labels-idx1-ubyte
+        ├── t10k-images-idx3-ubyte
+        └── t10k-labels-idx1-ubyte
+```
+
+**Step 3: Set the Dataset Path**
+
+Add the following line in your Python code:
+
+```python
+DATA_PATH = "./MNIST/raw"
+```
+
+Alternatively, use the complete Windows path:
+
+```python
+DATA_PATH = r"D:\DL_Practical\MNIST\raw"
+```
+
+**Step 4: Load the Dataset**
+
+Use the following code to load the dataset from your PC:
+
+```python
+train_data = MNISTDataset(
+    DATA_PATH, train=True, transform=train_transform
+)
+
+test_data = MNISTDataset(
+    DATA_PATH, train=False, transform=test_transform
+)
+```
+
+**Step 5: Verify Dataset Loading**
+
+Expected output:
+
+```text
+Training images: 60000
+Testing images: 10000
+```
+
+**Result:** The MNIST dataset is successfully stored and loaded locally using PyTorch without requiring an internet connection or downloading during the practical exam.
+
+**Important:** Install PyTorch, torchvision, NumPy, Matplotlib and Pillow before the practical exam. If internet access is unavailable, ensure all required packages are already installed.
+
+
+
+--------------------------------------------------------------------code-----------------------------------------------------
+
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import numpy as np
+import matplotlib.pyplot as plt
+import os
+import gzip
+import struct
+
+from PIL import Image
+from torch.utils.data import Dataset, DataLoader
+from torchvision import transforms
+
+# Device configuration
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print("Device:", device)
+
+
+# 1. Load MNIST dataset from local PC
+DATA_PATH = "./MNIST/raw"
+
+
+class MNISTDataset(Dataset):
+    def __init__(self, path, train=True, transform=None):
+        self.transform = transform
+
+        if train:
+            img_file = "train-images-idx3-ubyte"
+            label_file = "train-labels-idx1-ubyte"
+        else:
+            img_file = "t10k-images-idx3-ubyte"
+            label_file = "t10k-labels-idx1-ubyte"
+
+        # Support both normal and .gz files
+        def read_file(filename):
+            filepath = os.path.join(path, filename)
+
+            if os.path.exists(filepath + ".gz"):
+                filepath += ".gz"
+
+            if filepath.endswith(".gz"):
+                with gzip.open(filepath, "rb") as f:
+                    return f.read()
+            else:
+                with open(filepath, "rb") as f:
+                    return f.read()
+
+        img_data = read_file(img_file)
+        label_data = read_file(label_file)
+
+        # Read image and label headers
+        _, self.count, rows, cols = struct.unpack(">IIII", img_data[:16])
+        _, label_count = struct.unpack(">II", label_data[:8])
+
+        if self.count != label_count:
+            raise ValueError("Images and labels count do not match")
+
+        self.images = np.frombuffer(
+            img_data, dtype=np.uint8, offset=16
+        ).reshape(self.count, rows, cols)
+
+        self.labels = np.frombuffer(
+            label_data, dtype=np.uint8, offset=8
+        )
+
+    def __len__(self):
+        return self.count
+
+    def __getitem__(self, index):
+        image = Image.fromarray(self.images[index])
+        label = int(self.labels[index])
+
+        if self.transform:
+            image = self.transform(image)
+
+        return image, label
+
+
+# 2. Data augmentation
+train_transform = transforms.Compose([
+    transforms.RandomRotation(10),
+    transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),
+    transforms.ToTensor()
+])
+
+test_transform = transforms.ToTensor()
+
+
+# 3. Load training and testing data
+train_data = MNISTDataset(
+    DATA_PATH, train=True, transform=train_transform
+)
+
+test_data = MNISTDataset(
+    DATA_PATH, train=False, transform=test_transform
+)
+
+train_loader = DataLoader(
+    train_data, batch_size=64, shuffle=True
+)
+
+test_loader = DataLoader(
+    test_data, batch_size=64, shuffle=False
+)
+
+print("Training images:", len(train_data))
+print("Testing images:", len(test_data))
+
+
+# 4. Build CNN model
+class CNN(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.conv = nn.Sequential(
+            nn.Conv2d(1, 16, 3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+
+            nn.Conv2d(16, 32, 3, padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(2)
+        )
+
+        self.fc = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(32 * 7 * 7, 128),
+            nn.ReLU(),
+            nn.Linear(128, 10)
+        )
+
+    def forward(self, x):
+        x = self.conv(x)
+        x = self.fc(x)
+        return x
+
+
+# 5. Build MLP model for comparison
+class MLP(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.model = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(28 * 28, 128),
+            nn.ReLU(),
+            nn.Linear(128, 64),
+            nn.ReLU(),
+            nn.Linear(64, 10)
+        )
+
+    def forward(self, x):
+        return self.model(x)
+
+
+# 6. Training function
+def train_model(model, name):
+    model = model.to(device)
+
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+    losses = []
+    accuracies = []
+
+    epochs = 5
+
+    for epoch in range(epochs):
+        model.train()
+        total_loss = 0
+
+        for images, labels in train_loader:
+            images = images.to(device)
+            labels = labels.to(device)
+
+            optimizer.zero_grad()
+
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+
+            loss.backward()
+            optimizer.step()
+
+            total_loss += loss.item()
+
+        avg_loss = total_loss / len(train_loader)
+
+        # Testing accuracy
+        model.eval()
+        correct = 0
+        total = 0
+
+        with torch.no_grad():
+            for images, labels in test_loader:
+                images = images.to(device)
+                labels = labels.to(device)
+
+                outputs = model(images)
+                _, predicted = torch.max(outputs, 1)
+
+                total += labels.size(0)
+                correct += (predicted == labels).sum().item()
+
+        accuracy = 100 * correct / total
+
+        losses.append(avg_loss)
+        accuracies.append(accuracy)
+
+        print(f"{name} - Epoch {epoch+1}/{epochs}, "
+              f"Loss: {avg_loss:.4f}, "
+              f"Accuracy: {accuracy:.2f}%")
+
+    return model, losses, accuracies
+
+
+# 7. Train CNN
+cnn = CNN()
+cnn, cnn_loss, cnn_acc = train_model(cnn, "CNN")
+
+
+# 8. Train MLP
+mlp = MLP()
+mlp, mlp_loss, mlp_acc = train_model(mlp, "MLP")
+
+
+# 9. Compare final accuracy
+print("\nFinal Results")
+print("CNN Accuracy:", round(cnn_acc[-1], 2), "%")
+print("MLP Accuracy:", round(mlp_acc[-1], 2), "%")
+
+
+# 10. Plot loss and accuracy comparison
+plt.figure(figsize=(12, 5))
+
+plt.subplot(1, 2, 1)
+plt.plot(cnn_loss, label="CNN")
+plt.plot(mlp_loss, label="MLP")
+plt.title("Training Loss Comparison")
+plt.xlabel("Epochs")
+plt.ylabel("Loss")
+plt.legend()
+plt.grid()
+
+plt.subplot(1, 2, 2)
+plt.plot(cnn_acc, label="CNN")
+plt.plot(mlp_acc, label="MLP")
+plt.title("Accuracy Comparison")
+plt.xlabel("Epochs")
+plt.ylabel("Accuracy (%)")
+plt.legend()
+plt.grid()
+
+plt.tight_layout()
+plt.show()
